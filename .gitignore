@@ -1,0 +1,26 @@
+# .NET and Visual Studio
+**/bin/
+**/obj/
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.rsuser
+*.userosscache
+*.sln.docstates
+*.pdb
+*.log
+*.tmp
+TestResults/
+*.trx
+
+# Local builds, older binaries, and smoke output
+/outputs/
+/work/
+**/dist/
+**/gui-release/
+/release/
+*.pid
+*.shown
+*.zip

@@ -1,0 +1,123 @@
+<Window x:Class="ExitEcho.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ExitEcho" Icon="/Assets/ExitEcho.ico" Width="500" Height="430" MinWidth="500" MinHeight="430"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Background="{DynamicResource BackgroundBrush}" Closing="OnClosing">
+  <Window.Resources>
+    <Style TargetType="ListBoxItem">
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="FontFamily" Value="Segoe UI"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Padding" Value="10,7"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ListBoxItem">
+            <Border x:Name="ItemBorder" Background="Transparent" CornerRadius="6">
+              <ContentPresenter Margin="{TemplateBinding Padding}"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SecondaryBrush}"/>
+              </Trigger>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SecondaryBrush}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+
+  <Grid Margin="24,22,24,24">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="22"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="26"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="10"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <StackPanel>
+        <TextBlock Text="ExitEcho" FontSize="24" FontWeight="SemiBold"/>
+        <TextBlock Text="See what keeps running after an app exits."
+                   Foreground="{DynamicResource MutedBrush}" FontSize="12.5" Margin="0,5,0,0"/>
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top" Margin="16,7,0,0">
+        <Ellipse x:Name="MonitoringDot" Width="8" Height="8" Fill="{DynamicResource SuccessBrush}"
+                 VerticalAlignment="Center" Margin="0,0,7,0"/>
+        <TextBlock x:Name="HeaderStatusText" Text="Monitoring" FontSize="12" FontWeight="SemiBold"
+                   VerticalAlignment="Center"/>
+      </StackPanel>
+    </Grid>
+
+    <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}"
+            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+            CornerRadius="10" Padding="18,17">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock x:Name="MonitoringText" Text="Monitoring active"
+                     FontSize="17" FontWeight="SemiBold"/>
+          <TextBlock x:Name="MonitoringSubtitle"
+                     Text="ExitEcho is watching apps in the background."
+                     Foreground="{DynamicResource MutedBrush}" FontSize="12.5"
+                     Margin="0,6,12,0"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+          <TextBlock x:Name="EventCountText" Text="0" FontSize="21" FontWeight="SemiBold"
+                     HorizontalAlignment="Right"/>
+          <TextBlock Text="Leftovers found" Foreground="{DynamicResource MutedBrush}"
+                     FontSize="11.5" Margin="0,2,0,0" HorizontalAlignment="Right"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="4">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock Text="Ignored apps" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+      <Button x:Name="RemoveButton" Grid.Column="1" Content="Remove selected"
+              Style="{StaticResource SecondaryButtonStyle}" Padding="10,5"
+              Click="OnRemoveIgnored"/>
+    </Grid>
+
+    <Grid Grid.Row="6">
+      <Border x:Name="EmptyState" Background="{DynamicResource SurfaceBrush}"
+              BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+              CornerRadius="8" Padding="15,13">
+        <StackPanel>
+          <TextBlock Text="No ignored apps" FontSize="13" FontWeight="SemiBold"/>
+          <TextBlock Text="Apps you ignore will appear here."
+                     Foreground="{DynamicResource MutedBrush}" FontSize="12"
+                     Margin="0,4,0,0"/>
+        </StackPanel>
+      </Border>
+      <Border x:Name="IgnoredListBorder" Background="{DynamicResource SurfaceBrush}"
+              BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+              CornerRadius="8" MaxHeight="112" Visibility="Collapsed">
+        <ListBox x:Name="IgnoredList" BorderThickness="0" Background="Transparent"
+                 Padding="5" SelectionChanged="OnIgnoredSelectionChanged"/>
+      </Border>
+    </Grid>
+
+    <Button x:Name="PauseButton" Grid.Row="8" Content="Pause monitoring"
+            Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left"
+            Click="OnPauseResume"/>
+  </Grid>
+</Window>
