@@ -3,16 +3,24 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace ExitEcho.Core;
 
 public sealed record LeftoverProcess(string Name, int Pid, long StartUtcTicks, long WorkingSetBytes);
-public sealed record LeftoverEvent(string AppName, IReadOnlyList<LeftoverProcess> Processes);
+public sealed record LeftoverEvent(string AppName, IReadOnlyList<LeftoverProcess> Processes,
+    string? ExecutablePath = null);
 
 public sealed class PassiveMonitor
 {
     public event Action<LeftoverEvent>? LeftoversFound;
     public bool WriteToConsole { get; set; } = true;
+    private int _notificationDelaySeconds = 8;
+    public int NotificationDelaySeconds
+    {
+        get => Volatile.Read(ref _notificationDelaySeconds);
+        set => Volatile.Write(ref _notificationDelaySeconds, Math.Clamp(value, 3, 60));
+    }
 
     private readonly record struct ProcessId(int Pid, long StartUtcTicks);
     private readonly record struct StartEvent(ProcessId Id, int ParentPid, string Name);
@@ -24,10 +32,11 @@ public sealed class PassiveMonitor
         public long? StoppedUtcTicks { get; set; }
     }
 
-    private sealed class AppSession(ProcessId root, string name)
+    private sealed class AppSession(ProcessId root, string name, string? executablePath)
     {
         public ProcessId Root { get; } = root;
         public string Name { get; } = name;
+        public string? ExecutablePath { get; } = executablePath;
         public HashSet<ProcessId> Related { get; } = [root];
         public DateTimeOffset? LastWindowGone { get; set; }
         public DateTimeOffset? CompletedAt { get; set; }
@@ -130,7 +139,7 @@ public sealed class PassiveMonitor
                     if (SystemNames.Contains(name))
                         continue;
 
-                    var app = new AppSession(id, name);
+                    var app = new AppSession(id, name, TryGetExecutablePath(id));
                     _sessions.Add(app);
                     _seenRoots.Add(id);
                     _known.TryAdd(id, new ProcessRecord(new StartEvent(id, 0, name)));
@@ -155,7 +164,7 @@ public sealed class PassiveMonitor
                     }
 
                     app.LastWindowGone ??= DateTimeOffset.UtcNow;
-                    if (DateTimeOffset.UtcNow - app.LastWindowGone < TimeSpan.FromSeconds(8))
+                    if (DateTimeOffset.UtcNow - app.LastWindowGone < TimeSpan.FromSeconds(NotificationDelaySeconds))
                         continue;
 
                     if (usePolling)
@@ -400,7 +409,7 @@ public sealed class PassiveMonitor
         if (survivors.Count == 0)
             return;
 
-        LeftoversFound?.Invoke(new LeftoverEvent(app.Name, survivors));
+        LeftoversFound?.Invoke(new LeftoverEvent(app.Name, survivors, app.ExecutablePath));
         if (!WriteToConsole)
             return;
 
@@ -419,6 +428,33 @@ public sealed class PassiveMonitor
         catch (Exception exception) when (exception is ArgumentException or InvalidOperationException or Win32Exception)
         {
             return null;
+        }
+    }
+
+    private static string? TryGetExecutablePath(ProcessId id)
+    {
+        const uint processQueryLimitedInformation = 0x1000;
+        var handle = OpenProcess(processQueryLimitedInformation, false, id.Pid);
+        if (handle == IntPtr.Zero)
+            return null;
+        try
+        {
+            if (!GetProcessTimes(handle, out var created, out _, out _, out _) ||
+                Math.Abs(DateTime.FromFileTimeUtc(created).Ticks - id.StartUtcTicks) > TimeSpan.TicksPerMillisecond)
+                return null;
+
+            var capacity = 32768;
+            var path = new StringBuilder(capacity);
+            return QueryFullProcessImageName(handle, 0, path, ref capacity)
+                ? path.ToString(0, capacity) : null;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+        finally
+        {
+            CloseHandle(handle);
         }
     }
 
@@ -489,4 +525,21 @@ public sealed class PassiveMonitor
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmGetWindowAttribute(IntPtr window, uint attribute, out int value, int valueSize);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr OpenProcess(uint access, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, int processId);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetProcessTimes(IntPtr process, out long creationTime, out long exitTime,
+        out long kernelTime, out long userTime);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool QueryFullProcessImageName(IntPtr process, uint flags, StringBuilder executablePath,
+        ref int size);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CloseHandle(IntPtr handle);
 }

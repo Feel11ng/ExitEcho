@@ -14,5 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ExitEcho.Core\ExitEcho.Core.csproj" />
     <Resource Include="..\assets\ExitEcho.ico" Link="Assets\ExitEcho.ico" />
+    <Resource Include="..\assets\logo-*.png" Link="Assets\%(Filename)%(Extension)" />
+    <Resource Include="Localization\strings.*.json" />
   </ItemGroup>
 </Project>

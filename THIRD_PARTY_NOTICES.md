@@ -1,6 +1,14 @@
+# Third-party notices
+
+ExitEcho includes local WPF Geometry paths converted from the free Stroke Rounded icons in [@hugeicons/core-free-icons](https://github.com/hugeicons/hugeicons), version 4.3.5. Each source icon is named in `ExitEcho.App/Resources/Icons.xaml`. No Hugeicons Pro assets, icon font, package, or network service is required at runtime.
+
+The following sites informed visual and motion choices only; no component code or assets were copied: [Refero Styles](https://styles.refero.design/), [Skiper UI](https://skiper-ui.com/), [Watermelon UI](https://ui.watermelon.sh/), [Motion Primitives](https://motion-primitives.com/), [Magic UI](https://magicui.design/), and [Cult UI](https://www.cult-ui.com/).
+
+## Hugeicons Free license
+
 MIT License
 
-Copyright (c) 2026 Feel11ng
+Copyright (c) 2025 Hugeicons
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,61 +1,161 @@
 <Window x:Class="ExitEcho.App.DetailsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="ExitEcho details" Icon="/Assets/ExitEcho.ico" Width="470" MinWidth="470" MinHeight="250" MaxHeight="420"
-        SizeToContent="Height"
-        ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
+        xmlns:local="clr-namespace:ExitEcho.App"
+        Title="{DynamicResource L_Brand}" Icon="/Assets/ExitEcho.ico" Width="456" MinWidth="440" FlowDirection="{DynamicResource LocalFlowDirection}"
+        Height="390" MinHeight="360" Opacity="0" ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen" Style="{StaticResource UtilityWindowStyle}"
         Background="{DynamicResource BackgroundBrush}">
-  <Grid Margin="22">
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition Height="10"/>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition Height="8"/>
-      <RowDefinition Height="Auto"/>
-      <RowDefinition Height="14"/>
-      <RowDefinition Height="Auto"/>
-    </Grid.RowDefinitions>
-    <TextBlock x:Name="AppTitle" Grid.Row="0" FontSize="20" FontWeight="SemiBold"/>
-    <TextBlock x:Name="SummaryText" Grid.Row="2" Foreground="{DynamicResource MutedBrush}"/>
-    <Border Grid.Row="4" Background="{DynamicResource SurfaceBrush}"
-            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8">
-      <Grid Margin="12,10">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="8"/>
-          <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-          </Grid.ColumnDefinitions>
-          <TextBlock Text="Process name" FontWeight="SemiBold"/>
-          <TextBlock Grid.Column="1" Text="PID" FontWeight="SemiBold"/>
-          <TextBlock Grid.Column="2" Text="RAM" FontWeight="SemiBold"/>
+  <Window.Resources>
+    <Style x:Key="DetailsAction" TargetType="Button">
+      <Setter Property="Height" Value="33"/>
+      <Setter Property="Padding" Value="13,0"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="ActionSurface" Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="8"
+                    RenderTransformOrigin="0.5,0.5">
+              <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
+              <Grid>
+                <Border x:Name="HoverSurface" Background="{DynamicResource HoverBrush}" CornerRadius="7" Opacity="0"/>
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Margin="{TemplateBinding Padding}"/>
+              </Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                  <DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
+                                   To="0.55" Duration="0:0:0.19"/>
+                </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                  <DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
+                                   To="0" Duration="0:0:0.19"/>
+                </Storyboard></BeginStoryboard></Trigger.ExitActions>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                  <DoubleAnimation Storyboard.TargetName="ActionSurface"
+                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                   To="0.985" Duration="0:0:0.09"/>
+                  <DoubleAnimation Storyboard.TargetName="ActionSurface"
+                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                   To="0.985" Duration="0:0:0.09"/>
+                </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                  <DoubleAnimation Storyboard.TargetName="ActionSurface"
+                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                   To="1" Duration="0:0:0.16"/>
+                  <DoubleAnimation Storyboard.TargetName="ActionSurface"
+                                   Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                   To="1" Duration="0:0:0.16"/>
+                </Storyboard></BeginStoryboard></Trigger.ExitActions>
+              </Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="ActionSurface" Property="BorderBrush" Value="{DynamicResource FocusBrush}"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+  <Grid Background="{DynamicResource BackgroundBrush}">
+    <Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+    <local:ChromeTitleBar/>
+    <Grid x:Name="DetailsBody" Grid.Row="1" Margin="21,15,21,20">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="20"/><RowDefinition Height="35"/><RowDefinition Height="37"/>
+        <RowDefinition Height="10"/><RowDefinition Height="*"/><RowDefinition Height="12"/>
+        <RowDefinition Height="33"/>
+      </Grid.RowDefinitions>
+      <TextBlock x:Name="HeaderOverline" Text="{DynamicResource L_DetailsOverline}" Foreground="{DynamicResource MutedBrush}" FontSize="10.5" Opacity="0"
+                 FontWeight="SemiBold" VerticalAlignment="Center"/>
+      <Grid Grid.Row="1">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="23"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Grid Width="20" Height="20" VerticalAlignment="Center">
+          <Path x:Name="AppIconFallback" Data="{StaticResource IconAppWindow}" Stroke="{DynamicResource MutedBrush}"
+                Width="18" Height="18" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          <Image x:Name="AppIcon" Width="20" Height="20" Stretch="Uniform" Visibility="Collapsed"
+                 RenderOptions.BitmapScalingMode="HighQuality"/>
         </Grid>
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" MaxHeight="180">
-          <ItemsControl x:Name="ProcessesList">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <Grid Margin="0,0,0,8">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                  </Grid.ColumnDefinitions>
-                  <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
-                  <TextBlock Grid.Column="1" Text="{Binding Pid}"/>
-                  <TextBlock Grid.Column="2" Text="{Binding RamText}"/>
-                </Grid>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </ScrollViewer>
+        <TextBlock x:Name="AppTitle" FlowDirection="LeftToRight" Grid.Column="1" Margin="7,0,0,0" Foreground="{DynamicResource TextBrush}" FontSize="22" Opacity="0"
+                   FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
       </Grid>
-    </Border>
-    <Button Grid.Row="6" Content="End leftovers" Style="{StaticResource PrimaryButtonStyle}"
-            HorizontalAlignment="Right" Click="OnEndLeftovers"/>
+      <Grid x:Name="SummaryGrid" Grid.Row="2" Opacity="0">
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock x:Name="SummaryText" Foreground="{DynamicResource MutedBrush}" FontSize="12.5"/>
+          <TextBlock x:Name="MemorySummaryText" Foreground="{DynamicResource MutedBrush}" FontSize="11.5" Margin="0,3,0,0"/>
+        </StackPanel>
+        <Canvas x:Name="EchoMark" Width="38" Height="26" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="0"
+                IsHitTestVisible="False">
+          <Border x:Name="EchoBack" Canvas.Left="16" Canvas.Top="1" Width="21" Height="16" BorderBrush="{DynamicResource EchoBackBrush}"
+                  BorderThickness="1" CornerRadius="3" Opacity="0.17"/>
+          <Border x:Name="EchoMiddle" Canvas.Left="9" Canvas.Top="5" Width="21" Height="16" BorderBrush="{DynamicResource EchoMiddleBrush}"
+                  BorderThickness="1" CornerRadius="3" Opacity="0.32"/>
+          <Border Canvas.Left="2" Canvas.Top="9" Width="21" Height="16" Background="{DynamicResource EchoFrontFillBrush}"
+                  BorderBrush="{DynamicResource EchoFrontBrush}" BorderThickness="1.2" CornerRadius="3" Opacity="0.9">
+            <Grid>
+              <Border Height="1" Background="{DynamicResource EchoMiddleBrush}" VerticalAlignment="Top" Margin="0,5,0,0" Opacity="0.65"/>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="3,2,0,0" Opacity="0.65">
+                <Ellipse Width="1.5" Height="1.5" Fill="{DynamicResource EchoFrontBrush}" Margin="0,0,2,0"/>
+                <Ellipse Width="1.5" Height="1.5" Fill="{DynamicResource EchoFrontBrush}" Margin="0,0,2,0"/>
+                <Ellipse Width="1.5" Height="1.5" Fill="{DynamicResource EchoFrontBrush}"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+        </Canvas>
+      </Grid>
+      <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl x:Name="ProcessesList">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border x:Name="ProcessCard" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
+                      BorderThickness="1" CornerRadius="9" Padding="13,10"
+                      Margin="0,0,0,6" MinHeight="72" Opacity="0"
+                      Loaded="OnProcessCardLoaded">
+                <Border.RenderTransform><TranslateTransform Y="5"/></Border.RenderTransform>
+                <Grid>
+                  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                  <TextBlock Text="{Binding Name}" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}" FontSize="14" FontWeight="SemiBold"
+                             TextTrimming="CharacterEllipsis"/>
+                  <Grid Grid.Row="1" Margin="0,6,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding PidText}" FlowDirection="LeftToRight" Foreground="{DynamicResource MutedBrush}" FontSize="11.5"/>
+                    <TextBlock Grid.Column="1" Text="{Binding RamText}" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}" FontSize="12"
+                               FontWeight="SemiBold" HorizontalAlignment="Right"/>
+                  </Grid>
+                </Grid>
+              </Border>
+              <DataTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                  <Setter TargetName="ProcessCard" Property="Background" Value="{DynamicResource CardHoverBrush}"/>
+                  <Setter TargetName="ProcessCard" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                </Trigger>
+              </DataTemplate.Triggers>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+      <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Content="{DynamicResource L_Close}" Style="{StaticResource DetailsAction}" Click="OnClose"
+                AutomationProperties.Name="{DynamicResource L_Close}" Margin="0,0,8,0"/>
+        <Button Style="{StaticResource DetailsAction}" Background="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}"
+                Click="OnEndLeftovers" AutomationProperties.Name="{DynamicResource L_EndLeftovers}">
+          <StackPanel Orientation="Horizontal">
+            <Path Data="{StaticResource IconEndProcess}" Stroke="{DynamicResource ButtonTextBrush}" Width="15" Height="15"
+                  Stretch="Uniform" Margin="0,0,7,0"/>
+            <TextBlock Text="{DynamicResource L_EndLeftovers}" Foreground="{DynamicResource ButtonTextBrush}"/>
+          </StackPanel>
+        </Button>
+      </StackPanel>
+    </Grid>
   </Grid>
 </Window>

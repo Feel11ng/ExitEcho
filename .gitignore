@@ -18,9 +18,14 @@ TestResults/
 # Local builds, older binaries, and smoke output
 /outputs/
 /work/
+/artifacts/
+/tools/
+/docs/DESIGN_DIRECTION.md
 **/dist/
 **/gui-release/
 /release/
 *.pid
 *.shown
 *.zip
+**/node_modules/
+/%SystemDrive%/

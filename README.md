@@ -4,56 +4,66 @@
 
 **See what keeps running after an app exits.**
 
-ExitEcho is a lightweight utility for **Windows 10/11 x64** that detects processes an application leaves running after its visible windows are closed.
+ExitEcho is a local Windows utility that shows related processes still running after an application's visible windows close. It lets you inspect them and decide what to do.
 
-> **Download for Windows 10/11 x64:** [GitHub Releases](https://github.com/Feel11ng/ExitEcho/releases)
+![ExitEcho demonstration: a demo app closes and ExitEcho detects remaining processes](assets/demo.gif)
 
-## Why
-
-Closing an app's window does not always end its processes. ExitEcho shows which related processes remain so you can decide whether to leave them running. Some apps intentionally continue working in the background.
-
-## How it works
-
-ExitEcho watches visible top-level windows and related process starts and stops. It identifies processes by PID and creation time. After an app's last visible window disappears, it waits eight seconds before reporting any related processes still running.
+**Windows 10/11 x64** · [Download the portable ZIP from GitHub Releases](https://github.com/Feel11ng/ExitEcho/releases)
 
 ## Features
 
-- Passive monitoring and leftover notifications
-- Process name, PID, and RAM details
-- Manual termination with confirmation; per-app ignore list
-- Tray pause control and single-instance GUI
-- CLI `run` and `watch` modes
+- Watches apps you open normally and reports related processes left running after the last window closes.
+- Shows process names, PIDs, and RAM; optional **End leftovers** always asks for confirmation.
+- Keeps local exit history and a per-app ignore list.
+- Runs in the system tray with pause and resume controls; only one GUI instance runs at a time.
+- Provides light and dark themes, plus settings for language, optional Windows startup, notifications, and the detection delay.
+- Offers English and 26 other UI languages, including right-to-left Arabic and Hebrew.
+- Includes `exitecho watch` and `exitecho run` CLI modes for development and debugging.
 
-## Installation
+## Screenshots
 
-Download the portable ZIP from Releases, extract it, and run `ExitEcho.exe`. No installer or account is needed.
+| Main window | Notification |
+| --- | --- |
+| ![ExitEcho main window in dark mode](assets/screenshots/main.png) | ![ExitEcho leftover notification in dark mode](assets/screenshots/notification.png) |
+| Details | Settings |
+| ![ExitEcho process details in dark mode](assets/screenshots/details.png) | ![ExitEcho settings in dark mode](assets/screenshots/settings.png) |
 
-## Usage
+[![Watch the full ExitEcho demo](assets/demo-cover.png)](assets/demo.mp4)
 
-ExitEcho starts in the system tray. Use its menu to open the window, pause monitoring, or exit. Select **Details** on a notification to inspect processes; **End leftovers** always asks for confirmation.
+The demo uses real ExitEcho windows with illustrative process data.
 
-The source build also provides a CLI:
+## Installation and use
+
+Download `ExitEcho-v0.1.0-win-x64.zip` from [Releases](https://github.com/Feel11ng/ExitEcho/releases), extract it, and run `ExitEcho.exe`. The portable build needs no installer or administrator rights.
+
+ExitEcho starts in the system tray and monitors in the background. Open it from the tray icon. When it finds related processes after an app closes, choose **Details** to inspect them, **Ignore** to suppress future alerts for that app, or **End leftovers** to terminate the listed processes after confirmation. Monitoring can be paused from the tray or main window. Settings let you adjust the notification delay (3–60 seconds; eight by default), theme, language, notifications, and optional Windows startup.
+
+The CLI is built separately from source:
 
 ```text
 exitecho watch
 exitecho run "<path-to-exe>" [args]
 ```
 
+## Languages
+
+The UI supports 27 languages: English, Russian, German, French, Spanish, Brazilian and European Portuguese, Italian, Polish, Ukrainian, Turkish, Dutch, Czech, Swedish, Norwegian, Danish, Finnish, Simplified and Traditional Chinese, Japanese, Korean, Arabic, Hebrew, Hindi, Indonesian, Vietnamese, and Thai. Select a language in Settings or use the Windows system language. The CLI is in English.
+
 ## Privacy
 
-ExitEcho runs fully locally. It requires no account, collects no telemetry, and makes no network requests.
+All settings and history stay local. No account, telemetry, or network requests.
 
 ## Limitations
 
-Only applications observed with visible top-level windows are tracked. Very short-lived or inaccessible processes may be missed. A remaining process is not necessarily a problem; many applications run background tasks by design.
+ExitEcho tracks apps it observes with visible top-level windows. Inaccessible, short-lived, or detached processes may be missed. A process left running does not necessarily indicate a problem; some apps intentionally continue in the background. Ending processes can interrupt their work, so ExitEcho never does it automatically.
 
-## Building from source
+## Build from source
 
 On Windows 10/11 x64 with the .NET 8 SDK:
 
-```text
+```powershell
 dotnet build ExitEcho.sln -c Release
-dotnet publish ExitEcho.App/ExitEcho.App.csproj -c Release -r win-x64 --self-contained true
+dotnet publish ExitEcho.App/ExitEcho.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
 ```
 
-<!-- Future media: assets/demo.gif and assets/screenshot.png -->
+See the [changelog](CHANGELOG.md), [third-party notices](THIRD_PARTY_NOTICES.md), and [MIT license](LICENSE). Created by **Feel11ng**.
