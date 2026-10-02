@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+          architecture: x64
+
+      - name: Restore solution
+        run: dotnet restore ExitEcho.sln
+
+      - name: Build solution (Release)
+        run: dotnet build ExitEcho.sln --configuration Release --no-restore
+
+      - name: Restore SmokeHost
+        run: dotnet restore tests/ExitEchoSmokeHost/ExitEchoSmokeHost.csproj
+
+      - name: Build SmokeHost (Release)
+        run: dotnet build tests/ExitEchoSmokeHost/ExitEchoSmokeHost.csproj --configuration Release --no-restore
