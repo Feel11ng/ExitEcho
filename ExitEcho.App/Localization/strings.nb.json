@@ -86,5 +86,7 @@
   "ThemeSystem": "Systemstandard",
   "IgnoredAppRule": "App: {0}",
   "IgnoredProcessRule": "Prosess: {0} · {1}",
-  "IgnoredLoadFailed": "Kunne ikke lese unntakene: {0}. Filen ble ikke endret."
+  "IgnoredLoadFailed": "Kunne ikke lese unntakene: {0}. Filen ble ikke endret.",
+  "IgnoredProcessRuleNameOnly": "Prosess: {0} · {1} (bare navn)",
+  "IgnoreProcessWithoutPathWarning": "EXE-banen til {0} er ikke tilgjengelig. Å ignorere {1} etter appnavn kan også påvirke en annen app med samme navn og utilgjengelig bane. Fortsette?"
 }

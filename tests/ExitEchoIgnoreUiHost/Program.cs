@@ -17,6 +17,9 @@ internal static class Program
         var ignoredPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "ExitEcho", "ignored.json");
         var previous = File.Exists(ignoredPath) ? File.ReadAllBytes(ignoredPath) : null;
+        var settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ExitEcho", "settings.json");
+        var previousSettings = File.Exists(settingsPath) ? File.ReadAllBytes(settingsPath) : null;
         using var ignoredChild = Process.Start(new ProcessStartInfo("powershell.exe", "-NoProfile -Command Start-Sleep -Seconds 90")
         { UseShellExecute = false, CreateNoWindow = true })!;
         using var visibleChild = Process.Start(new ProcessStartInfo("cmd.exe", "/c choice /t 90 /d y >nul")
@@ -59,9 +62,17 @@ internal static class Program
                 Check(list.Items.Count == 1, "Details updates immediately after Ignore process");
                 Check(((TextBlock)notification.FindName("CountText")!).Text == "1", "notification count updates immediately");
                 Check(((Button)details.FindName("EndLeftoversButton")!).IsEnabled, "End leftovers remains available");
+                var rowIgnore = FindChildren<Button>(details).Single(button => button.Tag is LeftoverProcess);
+                var pidLabel = FindChildren<TextBlock>(details).Single(label => label.Text.StartsWith("PID "));
+                var ramLabel = FindChildren<TextBlock>(details).Single(label => label.Text.EndsWith(" MB RAM"));
+                Check(!Bounds(rowIgnore, details).IntersectsWith(Bounds(pidLabel, details)) &&
+                      !Bounds(rowIgnore, details).IntersectsWith(Bounds(ramLabel, details)),
+                    "Ignore action does not overlap PID or RAM");
                 var rules = IgnoreStore.Load(ignoredPath);
                 Check(rules.Any(rule => rule.IsProcess && rule.ProcessName == ignoredChild.ProcessName),
                     "process rule saved");
+                Check(new IgnoredRule("Fallback app", null, ignoredChild.ProcessName).ToString()
+                    .Contains("name only", StringComparison.Ordinal), "name-only scope is visible in rule label");
                 typeof(App).GetMethod("Ignore", BindingFlags.Instance | BindingFlags.NonPublic)!
                     .Invoke(app, ["Another app"]);
                 typeof(MainWindow).GetMethod("ShowIgnoredApps", BindingFlags.Instance | BindingFlags.NonPublic)!
@@ -77,6 +88,9 @@ internal static class Program
                 Directory.CreateDirectory(output);
                 Capture(main, Path.Combine(output, "process-ignore-rules-dark.png"));
                 Capture(details, Path.Combine(output, "process-ignore-details-dark.png"));
+                Capture(details, Path.Combine(output, "process-ignore-details-dpi-100.png"));
+                Capture(details, Path.Combine(output, "process-ignore-details-dpi-125.png"), 1.25);
+                Capture(details, Path.Combine(output, "process-ignore-details-dpi-150.png"), 1.5);
                 Capture(notification, Path.Combine(output, "process-ignore-notification-filtered.png"));
 
                 ignoredList.SelectedItem = ignoredList.Items.Cast<object>()
@@ -115,6 +129,8 @@ internal static class Program
                 main.Close();
                 if (previous is null) File.Delete(ignoredPath);
                 else File.WriteAllBytes(ignoredPath, previous);
+                if (previousSettings is null) File.Delete(settingsPath);
+                else File.WriteAllBytes(settingsPath, previousSettings);
                 if (!ignoredChild.HasExited) ignoredChild.Kill();
                 if (!visibleChild.HasExited) visibleChild.Kill();
                 Dispatcher.CurrentDispatcher.InvokeShutdown();
@@ -150,11 +166,14 @@ internal static class Program
         timer.Start();
     }
 
-    private static void Capture(Window window, string path)
+    private static Rect Bounds(FrameworkElement element, Visual ancestor) =>
+        element.TransformToAncestor(ancestor).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+
+    private static void Capture(Window window, string path, double scale = 1)
     {
-        var width = (int)Math.Ceiling(window.ActualWidth);
-        var height = (int)Math.Ceiling(window.ActualHeight);
-        var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
+        var width = (int)Math.Ceiling(window.ActualWidth * scale);
+        var height = (int)Math.Ceiling(window.ActualHeight * scale);
+        var bitmap = new RenderTargetBitmap(width, height, 96 * scale, 96 * scale, PixelFormats.Pbgra32);
         bitmap.Render(window);
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(bitmap));

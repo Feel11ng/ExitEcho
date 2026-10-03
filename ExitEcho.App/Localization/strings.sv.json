@@ -86,5 +86,7 @@
   "ThemeSystem": "Systemstandard",
   "IgnoredAppRule": "App: {0}",
   "IgnoredProcessRule": "Process: {0} · {1}",
-  "IgnoredLoadFailed": "Undantagen kunde inte läsas: {0}. Filen ändrades inte."
+  "IgnoredLoadFailed": "Undantagen kunde inte läsas: {0}. Filen ändrades inte.",
+  "IgnoredProcessRuleNameOnly": "Process: {0} · {1} (endast namn)",
+  "IgnoreProcessWithoutPathWarning": "EXE-sökvägen för {0} är inte tillgänglig. Om {1} ignoreras efter appnamn kan även en annan app med samma namn och otillgänglig sökväg påverkas. Fortsätta?"
 }

@@ -88,5 +88,7 @@
   "ThemeSystem": "Domyślny systemowy",
   "IgnoredAppRule": "Aplikacja: {0}",
   "IgnoredProcessRule": "Proces: {0} · {1}",
-  "IgnoredLoadFailed": "Nie można odczytać wyjątków: {0}. Plik pozostał bez zmian."
+  "IgnoredLoadFailed": "Nie można odczytać wyjątków: {0}. Plik pozostał bez zmian.",
+  "IgnoredProcessRuleNameOnly": "Proces: {0} · {1} (tylko nazwa)",
+  "IgnoreProcessWithoutPathWarning": "Ścieżka EXE aplikacji {0} jest niedostępna. Ignorowanie {1} według nazwy aplikacji może też objąć inną aplikację o tej samej nazwie i niedostępnej ścieżce. Kontynuować?"
 }

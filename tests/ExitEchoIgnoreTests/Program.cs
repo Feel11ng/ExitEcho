@@ -10,6 +10,10 @@ try
     File.WriteAllText(path, "[\"Chrome\",\"chrome\",\"Discord\"]");
     var legacy = IgnoreStore.Load(path);
     Check(legacy.Count == 2 && legacy.All(rule => !rule.IsProcess), "legacy app rules");
+    IgnoreStore.Save(path, legacy.Append(new IgnoredRule("Chrome", @"C:\Apps\Chrome\chrome.exe", "worker")));
+    var migrated = IgnoreStore.Load(path);
+    Check(migrated.Count == 3 && migrated.Count(rule => !rule.IsProcess) == 2,
+        "legacy app rules survive migration with a process rule");
     var oldPath = Path.Combine(directory, "old-ignored.json");
     File.WriteAllText(oldPath, "[\"LegacyApp\"]");
     File.Delete(path);
@@ -38,6 +42,13 @@ try
         "same app name at different path");
     Check(IgnoreStore.Filter(chrome with { Processes = [worker] }, [loaded[1]]) is null,
         "all ignored suppresses empty notification");
+    var nameOnly = new IgnoredRule("Chrome", null, "worker");
+    Check(IgnoreStore.Filter(new LeftoverEvent("Chrome", [worker]), [nameOnly]) is null,
+        "name-only rule applies to selected app");
+    Check(IgnoreStore.Filter(new LeftoverEvent("Other", [worker]), [nameOnly])?.Processes.Count == 1,
+        "name-only rule does not affect a different app name");
+    Check(IgnoreStore.Filter(chrome with { Processes = [worker] }, [nameOnly])?.Processes.Count == 1,
+        "name-only rule does not silently expand to known EXE paths");
 
     File.WriteAllText(path, "{bad json");
     try { IgnoreStore.Load(path); throw new Exception("invalid JSON accepted"); }

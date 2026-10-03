@@ -86,5 +86,7 @@
   "ThemeSystem": "システム設定",
   "IgnoredAppRule": "アプリ: {0}",
   "IgnoredProcessRule": "プロセス: {0} · {1}",
-  "IgnoredLoadFailed": "除外設定を読み込めませんでした: {0}。ファイルは変更されていません。"
+  "IgnoredLoadFailed": "除外設定を読み込めませんでした: {0}。ファイルは変更されていません。",
+  "IgnoredProcessRuleNameOnly": "プロセス: {0} · {1}（名前のみ）",
+  "IgnoreProcessWithoutPathWarning": "{0} の EXE パスを取得できません。アプリ名で {1} を除外すると、同じ名前でパスを取得できない別のアプリにも影響する可能性があります。続行しますか？"
 }

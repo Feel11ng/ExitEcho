@@ -86,5 +86,7 @@
   "ThemeSystem": "Bawaan sistem",
   "IgnoredAppRule": "Aplikasi: {0}",
   "IgnoredProcessRule": "Proses: {0} · {1}",
-  "IgnoredLoadFailed": "Aturan pengecualian tidak dapat dibaca: {0}. Berkas tidak diubah."
+  "IgnoredLoadFailed": "Aturan pengecualian tidak dapat dibaca: {0}. Berkas tidak diubah.",
+  "IgnoredProcessRuleNameOnly": "Proses: {0} · {1} (nama saja)",
+  "IgnoreProcessWithoutPathWarning": "Jalur EXE untuk {0} tidak tersedia. Mengabaikan {1} berdasarkan nama aplikasi juga dapat memengaruhi aplikasi lain dengan nama yang sama dan jalur yang tidak dapat diakses. Lanjutkan?"
 }

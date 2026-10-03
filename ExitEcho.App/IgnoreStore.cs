@@ -18,7 +18,8 @@ public sealed record IgnoredRule(string AppName, string? ExecutablePath = null, 
             : string.Equals(ExecutablePath, leftover.ExecutablePath, StringComparison.OrdinalIgnoreCase));
 
     public override string ToString() => IsProcess
-        ? Loc.Format("IgnoredProcessRule", ProcessName!, AppName)
+        ? Loc.Format(ExecutablePath is null ? "IgnoredProcessRuleNameOnly" : "IgnoredProcessRule",
+            ProcessName!, AppName)
         : Loc.Format("IgnoredAppRule", AppName);
 }
 

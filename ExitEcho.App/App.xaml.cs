@@ -323,6 +323,10 @@ public partial class App : System.Windows.Application
             string.Equals(item.ExecutablePath, rule.ExecutablePath, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(item.ProcessName, rule.ProcessName, StringComparison.OrdinalIgnoreCase)))
         {
+            if (rule.ExecutablePath is null &&
+                MessageBox.Show(Loc.Format("IgnoreProcessWithoutPathWarning", rule.AppName, rule.ProcessName!),
+                    Loc.Get("Brand"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                return;
             _ignoredItems.Add(rule);
             if (!SaveIgnored())
             {

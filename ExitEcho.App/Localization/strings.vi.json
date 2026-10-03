@@ -86,5 +86,7 @@
   "ThemeSystem": "Theo hệ thống",
   "IgnoredAppRule": "Ứng dụng: {0}",
   "IgnoredProcessRule": "Tiến trình: {0} · {1}",
-  "IgnoredLoadFailed": "Không thể đọc quy tắc bỏ qua: {0}. Tệp được giữ nguyên."
+  "IgnoredLoadFailed": "Không thể đọc quy tắc bỏ qua: {0}. Tệp được giữ nguyên.",
+  "IgnoredProcessRuleNameOnly": "Tiến trình: {0} · {1} (chỉ theo tên)",
+  "IgnoreProcessWithoutPathWarning": "Không thể truy cập đường dẫn EXE của {0}. Bỏ qua {1} theo tên ứng dụng có thể ảnh hưởng đến ứng dụng khác cùng tên và không truy cập được đường dẫn. Tiếp tục?"
 }

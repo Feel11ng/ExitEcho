@@ -86,5 +86,7 @@
   "ThemeSystem": "System default",
   "IgnoredAppRule": "App: {0}",
   "IgnoredProcessRule": "Process: {0} · {1}",
-  "IgnoredLoadFailed": "Could not read ignored rules: {0}. The file was kept unchanged."
+  "IgnoredLoadFailed": "Could not read ignored rules: {0}. The file was kept unchanged.",
+  "IgnoredProcessRuleNameOnly": "Process: {0} · {1} (name only)",
+  "IgnoreProcessWithoutPathWarning": "The EXE path for {0} is unavailable. Ignoring {1} by app name may also affect another app with the same name and no accessible path. Continue?"
 }
