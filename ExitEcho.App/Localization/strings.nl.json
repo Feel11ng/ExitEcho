@@ -83,5 +83,10 @@
   "Theme": "Thema",
   "ThemeDark": "Donker",
   "ThemeLight": "Licht",
-  "ThemeSystem": "Systeemstandaard"
+  "ThemeSystem": "Systeemstandaard",
+  "IgnoredAppRule": "App: {0}",
+  "IgnoredProcessRule": "Proces: {0} · {1}",
+  "IgnoredLoadFailed": "Uitzonderingen kunnen niet worden gelezen: {0}. Het bestand is niet gewijzigd.",
+  "IgnoredProcessRuleNameOnly": "Proces: {0} · {1} (alleen naam)",
+  "IgnoreProcessWithoutPathWarning": "Het EXE-pad van {0} is niet beschikbaar. {1} negeren op appnaam kan ook een andere app met dezelfde naam en zonder toegankelijk pad treffen. Doorgaan?"
 }

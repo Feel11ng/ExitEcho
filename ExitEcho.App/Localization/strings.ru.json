@@ -85,5 +85,10 @@
   "Theme": "Тема",
   "ThemeDark": "Тёмная",
   "ThemeLight": "Светлая",
-  "ThemeSystem": "Как в Windows"
+  "ThemeSystem": "Как в Windows",
+  "IgnoredAppRule": "Приложение: {0}",
+  "IgnoredProcessRule": "Процесс: {0} · {1}",
+  "IgnoredLoadFailed": "Не удалось прочитать исключения: {0}. Файл оставлен без изменений.",
+  "IgnoredProcessRuleNameOnly": "Процесс: {0} · {1} (только имя)",
+  "IgnoreProcessWithoutPathWarning": "Путь к EXE приложения {0} недоступен. Исключение процесса {1} по имени приложения может затронуть другое приложение с таким же именем и недоступным путём. Продолжить?"
 }

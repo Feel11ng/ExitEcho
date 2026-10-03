@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -21,7 +20,8 @@ public partial class App : System.Windows.Application
     private const string InstanceMutexName = @"Local\ExitEcho.Gui";
     private const string ActivateEventName = @"Local\ExitEcho.Gui.Activate";
     private readonly HashSet<string> _ignored = new(StringComparer.OrdinalIgnoreCase);
-    private readonly ObservableCollection<string> _ignoredItems = [];
+    private readonly ObservableCollection<IgnoredRule> _ignoredItems = [];
+    private string? _ignoredLoadError;
     private readonly List<NotificationWindow> _notifications = [];
     private readonly HistoryStore _history = new();
     private readonly ConditionalWeakTable<LeftoverEvent, StrongBox<Guid>> _historyIds = new();
@@ -54,7 +54,7 @@ public partial class App : System.Windows.Application
     internal bool IsExiting => _exiting;
     internal bool IsPaused => _paused;
     internal int EventCount => _eventCount;
-    internal ObservableCollection<string> IgnoredApps => _ignoredItems;
+    internal ObservableCollection<IgnoredRule> IgnoredApps => _ignoredItems;
     internal AppSettings Settings => _settings;
 
     internal void ApplyWindowTheme(Window window)
@@ -87,10 +87,20 @@ public partial class App : System.Windows.Application
         ApplyTheme();
         SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
 
-        foreach (var name in LoadIgnored())
+        try
         {
-            _ignored.Add(name);
-            _ignoredItems.Add(name);
+            foreach (var rule in IgnoreStore.Load(IgnoredFile, LegacyIgnoredFile))
+            {
+                if (!rule.IsProcess)
+                    _ignored.Add(rule.AppName);
+                _ignoredItems.Add(rule);
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
+        {
+            _ignoredLoadError = exception.Message;
+            MessageBox.Show(Loc.Format("IgnoredLoadFailed", exception.Message), Loc.Get("Brand"),
+                MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         _main = new MainWindow(this);
@@ -273,24 +283,61 @@ public partial class App : System.Windows.Application
             PauseMonitoring();
     }
 
-    internal void RemoveIgnored(string? name)
+    internal void RemoveIgnored(IgnoredRule? rule)
     {
-        if (name is null || !_ignored.Remove(name))
+        if (rule is null || !_ignoredItems.Remove(rule))
             return;
-        _ignoredItems.Remove(name);
-        SaveIgnored();
+        if (!rule.IsProcess)
+            _ignored.Remove(rule.AppName);
+        if (!SaveIgnored())
+        {
+            if (!rule.IsProcess)
+                _ignored.Add(rule.AppName);
+            _ignoredItems.Add(rule);
+        }
     }
 
     internal void Ignore(string name)
     {
         if (_ignored.Add(name))
         {
-            _ignoredItems.Add(name);
-            SaveIgnored();
+            var rule = new IgnoredRule(name);
+            _ignoredItems.Add(rule);
+            if (!SaveIgnored())
+            {
+                _ignored.Remove(name);
+                _ignoredItems.Remove(rule);
+                return;
+            }
         }
         foreach (var window in _notifications.Where(window =>
                      string.Equals(window.AppName, name, StringComparison.OrdinalIgnoreCase)).ToArray())
             window.Close();
+    }
+
+    internal void IgnoreProcess(LeftoverEvent leftover, LeftoverProcess process)
+    {
+        var rule = new IgnoredRule(leftover.AppName, leftover.ExecutablePath, process.Name);
+        if (!_ignoredItems.Any(item => item.IsProcess &&
+            string.Equals(item.AppName, rule.AppName, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(item.ExecutablePath, rule.ExecutablePath, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(item.ProcessName, rule.ProcessName, StringComparison.OrdinalIgnoreCase)))
+        {
+            if (rule.ExecutablePath is null &&
+                MessageBox.Show(Loc.Format("IgnoreProcessWithoutPathWarning", rule.AppName, rule.ProcessName!),
+                    Loc.Get("Brand"), MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                return;
+            _ignoredItems.Add(rule);
+            if (!SaveIgnored())
+            {
+                _ignoredItems.Remove(rule);
+                return;
+            }
+        }
+        foreach (var notification in _notifications.ToArray())
+            notification.ApplyIgnoredRules(_ignoredItems);
+        foreach (var details in Windows.OfType<DetailsWindow>().ToArray())
+            details.ApplyIgnoredRules(_ignoredItems);
     }
 
     internal void OpenDetails(LeftoverEvent leftover, Window? origin = null)
@@ -302,6 +349,12 @@ public partial class App : System.Windows.Application
                 _history.MarkEnded(id.Value);
         };
         details.Show();
+    }
+
+    internal void TransferHistoryId(LeftoverEvent previous, LeftoverEvent current)
+    {
+        if (_historyIds.TryGetValue(previous, out var id))
+            _historyIds.Add(current, new StrongBox<Guid>(id.Value));
     }
 
     internal void OpenHistory()
@@ -391,6 +444,10 @@ public partial class App : System.Windows.Application
 
     private void ShowLeftover(LeftoverEvent leftover)
     {
+        var filtered = IgnoreStore.Filter(leftover, _ignoredItems);
+        if (filtered is null)
+            return;
+        leftover = filtered;
         _historyIds.Add(leftover, new StrongBox<Guid>(_history.Record(leftover)));
         _eventCount++;
         _main?.UpdateStatus();
@@ -496,37 +553,24 @@ public partial class App : System.Windows.Application
     private static string LegacyIgnoredFile => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CloseTrace", "ignored.json");
 
-    private static IEnumerable<string> LoadIgnored()
+    private bool SaveIgnored()
     {
+        if (_ignoredLoadError is not null)
+        {
+            MessageBox.Show(Loc.Format("IgnoredLoadFailed", _ignoredLoadError), Loc.Get("Brand"),
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false; // Keep an unreadable existing file intact.
+        }
         try
         {
-            var path = File.Exists(IgnoredFile) ? IgnoredFile : LegacyIgnoredFile;
-            if (!File.Exists(path))
-                return [];
-            return (JsonSerializer.Deserialize<List<string>>(File.ReadAllText(path)) ?? [])
-                .Where(name => !string.IsNullOrWhiteSpace(name))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToArray();
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
-        {
-            return [];
-        }
-    }
-
-    private void SaveIgnored()
-    {
-        try
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(IgnoredFile)!);
-            var temp = IgnoredFile + ".tmp";
-            File.WriteAllText(temp, JsonSerializer.Serialize(_ignoredItems.ToArray()));
-            File.Move(temp, IgnoredFile, true);
+            IgnoreStore.Save(IgnoredFile, _ignoredItems);
+            return true;
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
             MessageBox.Show(Loc.Format("IgnoredSaveFailed", exception.Message), Loc.Get("Brand"),
                 MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
         }
     }
 

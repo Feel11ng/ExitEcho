@@ -83,5 +83,10 @@
   "Theme": "Tema",
   "ThemeDark": "Escuro",
   "ThemeLight": "Claro",
-  "ThemeSystem": "Padrão do sistema"
+  "ThemeSystem": "Padrão do sistema",
+  "IgnoredAppRule": "Aplicativo: {0}",
+  "IgnoredProcessRule": "Processo: {0} · {1}",
+  "IgnoredLoadFailed": "Não foi possível ler as exclusões: {0}. O arquivo não foi alterado.",
+  "IgnoredProcessRuleNameOnly": "Processo: {0} · {1} (só nome)",
+  "IgnoreProcessWithoutPathWarning": "O caminho do EXE de {0} está indisponível. Ignorar {1} pelo nome do aplicativo também pode afetar outro aplicativo com o mesmo nome e sem caminho acessível. Continuar?"
 }

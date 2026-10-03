@@ -83,5 +83,10 @@
   "Theme": "Tema",
   "ThemeDark": "Koyu",
   "ThemeLight": "Açık",
-  "ThemeSystem": "Sistem varsayılanı"
+  "ThemeSystem": "Sistem varsayılanı",
+  "IgnoredAppRule": "Uygulama: {0}",
+  "IgnoredProcessRule": "İşlem: {0} · {1}",
+  "IgnoredLoadFailed": "Yok sayma kuralları okunamadı: {0}. Dosya değiştirilmedi.",
+  "IgnoredProcessRuleNameOnly": "İşlem: {0} · {1} (yalnızca ad)",
+  "IgnoreProcessWithoutPathWarning": "{0} için EXE yolu kullanılamıyor. {1} işlemini uygulama adına göre yok saymak, aynı ada ve erişilemeyen yola sahip başka bir uygulamayı da etkileyebilir. Devam edilsin mi?"
 }

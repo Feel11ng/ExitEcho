@@ -39,7 +39,7 @@ public partial class SettingsWindow : Window
     private void RefreshLocalization()
     {
         VersionText.Text = Loc.Format("Version",
-            Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.1.0");
+            Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.2.0");
         ((ComboBoxItem)LanguageCombo.Items[0]).Content = Loc.Get("SystemDefault");
         ((ComboBoxItem)ThemeCombo.Items[0]).Content = Loc.Get("ThemeSystem");
         ((ComboBoxItem)ThemeCombo.Items[1]).Content = Loc.Get("ThemeDark");

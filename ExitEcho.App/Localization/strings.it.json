@@ -83,5 +83,10 @@
   "Theme": "Tema",
   "ThemeDark": "Scuro",
   "ThemeLight": "Chiaro",
-  "ThemeSystem": "Predefinito di sistema"
+  "ThemeSystem": "Predefinito di sistema",
+  "IgnoredAppRule": "App: {0}",
+  "IgnoredProcessRule": "Processo: {0} · {1}",
+  "IgnoredLoadFailed": "Impossibile leggere le esclusioni: {0}. Il file non è stato modificato.",
+  "IgnoredProcessRuleNameOnly": "Processo: {0} · {1} (solo nome)",
+  "IgnoreProcessWithoutPathWarning": "Il percorso EXE di {0} non è disponibile. Ignorare {1} in base al nome dell'app può interessare anche un'altra app con lo stesso nome e un percorso non accessibile. Continuare?"
 }

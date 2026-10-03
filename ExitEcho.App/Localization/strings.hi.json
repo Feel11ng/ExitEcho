@@ -83,5 +83,10 @@
   "Theme": "थीम",
   "ThemeDark": "गहरा",
   "ThemeLight": "हल्का",
-  "ThemeSystem": "सिस्टम डिफ़ॉल्ट"
+  "ThemeSystem": "सिस्टम डिफ़ॉल्ट",
+  "IgnoredAppRule": "ऐप: {0}",
+  "IgnoredProcessRule": "प्रक्रिया: {0} · {1}",
+  "IgnoredLoadFailed": "अनदेखी नियम पढ़े नहीं जा सके: {0}। फ़ाइल नहीं बदली गई।",
+  "IgnoredProcessRuleNameOnly": "प्रक्रिया: {0} · {1} (केवल नाम)",
+  "IgnoreProcessWithoutPathWarning": "{0} का EXE पथ उपलब्ध नहीं है। ऐप के नाम से {1} को अनदेखा करने पर उसी नाम और अनुपलब्ध पथ वाले किसी अन्य ऐप पर भी असर पड़ सकता है। जारी रखें?"
 }

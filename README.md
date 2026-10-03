@@ -14,7 +14,7 @@ ExitEcho is a local Windows utility that shows related processes still running a
 
 - Watches apps you open normally and reports related processes left running after the last window closes.
 - Shows process names, PIDs, and RAM; optional **End leftovers** always asks for confirmation.
-- Keeps local exit history and a per-app ignore list.
+- Keeps local exit history and separate app-wide and process-specific ignore rules.
 - Runs in the system tray with pause and resume controls; only one GUI instance runs at a time.
 - Provides light and dark themes, plus settings for language, optional Windows startup, notifications, and the detection delay.
 - Offers English and 26 other UI languages, including right-to-left Arabic and Hebrew.
@@ -34,9 +34,9 @@ The demo uses real ExitEcho windows with illustrative process data.
 
 ## Installation and use
 
-Download `ExitEcho-v0.1.0-win-x64.zip` from [Releases](https://github.com/Feel11ng/ExitEcho/releases), extract it, and run `ExitEcho.exe`. The portable build needs no installer or administrator rights.
+Download `ExitEcho-v0.2.0-win-x64.zip` from [Releases](https://github.com/Feel11ng/ExitEcho/releases), extract it, and run `ExitEcho.exe`. The portable build needs no installer or administrator rights.
 
-ExitEcho starts in the system tray and monitors in the background. Open it from the tray icon. When it finds related processes after an app closes, choose **Details** to inspect them, **Ignore** to suppress future alerts for that app, or **End leftovers** to terminate the listed processes after confirmation. Monitoring can be paused from the tray or main window. Settings let you adjust the notification delay (3–60 seconds; eight by default), theme, language, notifications, and optional Windows startup.
+ExitEcho starts in the system tray and monitors in the background. Open it from the tray icon. When it finds related processes after an app closes, choose **Details** to inspect them, **Ignore app** to suppress future alerts for the whole app, or **Ignore process** beside a process in Details to exclude only that process for that app. Other processes remain visible; **End leftovers** applies only to the listed processes and asks for confirmation. Manage both kinds of rules under Ignored apps. Monitoring can be paused from the tray or main window. Settings let you adjust the notification delay (3–60 seconds; eight by default), theme, language, notifications, and optional Windows startup.
 
 The CLI is built separately from source:
 
@@ -55,7 +55,7 @@ All settings and history stay local. No account, telemetry, or network requests.
 
 ## Limitations
 
-ExitEcho tracks apps it observes with visible top-level windows. Inaccessible, short-lived, or detached processes may be missed. A process left running does not necessarily indicate a problem; some apps intentionally continue in the background. Ending processes can interrupt their work, so ExitEcho never does it automatically.
+ExitEcho tracks apps it observes with visible top-level windows. Inaccessible, short-lived, or detached processes may be missed. ExitEcho does not automatically determine whether a process is intentionally running in the background. Some apps intentionally continue running; ending processes can interrupt their work, so ExitEcho never does it automatically. Process ignore rules use the app's executable path when available; a rule based only on the app name is less precise and is labeled as such.
 
 ## Build from source
 

@@ -83,5 +83,10 @@
   "Theme": "主題",
   "ThemeDark": "深色",
   "ThemeLight": "淺色",
-  "ThemeSystem": "跟隨系統"
+  "ThemeSystem": "跟隨系統",
+  "IgnoredAppRule": "應用程式：{0}",
+  "IgnoredProcessRule": "處理程序：{0} · {1}",
+  "IgnoredLoadFailed": "無法讀取忽略規則：{0}。檔案未變更。",
+  "IgnoredProcessRuleNameOnly": "處理程序：{0} · {1}（僅名稱）",
+  "IgnoreProcessWithoutPathWarning": "無法取得 {0} 的 EXE 路徑。依應用程式名稱忽略 {1}，也可能影響名稱相同且路徑無法存取的其他應用程式。要繼續嗎？"
 }

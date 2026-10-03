@@ -124,8 +124,14 @@
                 <Border.RenderTransform><TranslateTransform Y="5"/></Border.RenderTransform>
                 <Grid>
                   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                  <TextBlock Text="{Binding Name}" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}" FontSize="14" FontWeight="SemiBold"
-                             TextTrimming="CharacterEllipsis"/>
+                  <Grid>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Name}" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}" FontSize="14" FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Tag="{Binding Process}" Content="{DynamicResource L_Ignore}" Style="{StaticResource DetailsAction}"
+                            Height="26" Padding="8,0" Margin="9,-3,-3,-3" FontSize="11" Click="OnIgnoreProcess"
+                            AutomationProperties.Name="{DynamicResource L_Ignore}"/>
+                  </Grid>
                   <Grid Grid.Row="1" Margin="0,6,0,0">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="{Binding PidText}" FlowDirection="LeftToRight" Foreground="{DynamicResource MutedBrush}" FontSize="11.5"/>
@@ -147,7 +153,7 @@
       <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
         <Button Content="{DynamicResource L_Close}" Style="{StaticResource DetailsAction}" Click="OnClose"
                 AutomationProperties.Name="{DynamicResource L_Close}" Margin="0,0,8,0"/>
-        <Button Style="{StaticResource DetailsAction}" Background="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}"
+        <Button x:Name="EndLeftoversButton" Style="{StaticResource DetailsAction}" Background="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}"
                 Click="OnEndLeftovers" AutomationProperties.Name="{DynamicResource L_EndLeftovers}">
           <StackPanel Orientation="Horizontal">
             <Path Data="{StaticResource IconEndProcess}" Stroke="{DynamicResource ButtonTextBrush}" Width="15" Height="15"

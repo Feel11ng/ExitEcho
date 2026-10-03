@@ -85,5 +85,10 @@
   "Theme": "Тема",
   "ThemeDark": "Темна",
   "ThemeLight": "Світла",
-  "ThemeSystem": "Як у Windows"
+  "ThemeSystem": "Як у Windows",
+  "IgnoredAppRule": "Застосунок: {0}",
+  "IgnoredProcessRule": "Процес: {0} · {1}",
+  "IgnoredLoadFailed": "Не вдалося прочитати винятки: {0}. Файл залишено без змін.",
+  "IgnoredProcessRuleNameOnly": "Процес: {0} · {1} (лише назва)",
+  "IgnoreProcessWithoutPathWarning": "Шлях до EXE застосунку {0} недоступний. Ігнорування {1} за назвою застосунку може також вплинути на інший застосунок із такою самою назвою та недоступним шляхом. Продовжити?"
 }

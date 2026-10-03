@@ -83,5 +83,10 @@
   "Theme": "主题",
   "ThemeDark": "深色",
   "ThemeLight": "浅色",
-  "ThemeSystem": "跟随系统"
+  "ThemeSystem": "跟随系统",
+  "IgnoredAppRule": "应用：{0}",
+  "IgnoredProcessRule": "进程：{0} · {1}",
+  "IgnoredLoadFailed": "无法读取忽略规则：{0}。文件未更改。",
+  "IgnoredProcessRuleNameOnly": "进程：{0} · {1}（仅名称）",
+  "IgnoreProcessWithoutPathWarning": "无法获取 {0} 的 EXE 路径。按应用名称忽略 {1}，也可能影响名称相同且路径不可用的其他应用。是否继续？"
 }

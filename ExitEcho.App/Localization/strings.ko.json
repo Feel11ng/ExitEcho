@@ -83,5 +83,10 @@
   "Theme": "테마",
   "ThemeDark": "어둡게",
   "ThemeLight": "밝게",
-  "ThemeSystem": "시스템 기본값"
+  "ThemeSystem": "시스템 기본값",
+  "IgnoredAppRule": "앱: {0}",
+  "IgnoredProcessRule": "프로세스: {0} · {1}",
+  "IgnoredLoadFailed": "제외 규칙을 읽을 수 없습니다: {0}. 파일은 변경되지 않았습니다.",
+  "IgnoredProcessRuleNameOnly": "프로세스: {0} · {1} (이름만)",
+  "IgnoreProcessWithoutPathWarning": "{0}의 EXE 경로를 확인할 수 없습니다. 앱 이름으로 {1}을 제외하면 이름이 같고 경로에 접근할 수 없는 다른 앱에도 영향을 줄 수 있습니다. 계속할까요?"
 }

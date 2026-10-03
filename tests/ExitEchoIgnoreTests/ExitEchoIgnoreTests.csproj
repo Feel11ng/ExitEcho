@@ -4,11 +4,8 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <PlatformTarget>x64</PlatformTarget>
-    <AssemblyName>exitecho</AssemblyName>
-    <Version>0.2.0</Version>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExitEcho.Core\ExitEcho.Core.csproj" />
+    <ProjectReference Include="..\..\ExitEcho.App\ExitEcho.App.csproj" />
   </ItemGroup>
 </Project>

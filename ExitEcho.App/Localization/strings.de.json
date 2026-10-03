@@ -83,5 +83,10 @@
   "Theme": "Design",
   "ThemeDark": "Dunkel",
   "ThemeLight": "Hell",
-  "ThemeSystem": "Systemstandard"
+  "ThemeSystem": "Systemstandard",
+  "IgnoredAppRule": "App: {0}",
+  "IgnoredProcessRule": "Prozess: {0} · {1}",
+  "IgnoredLoadFailed": "Ignorierregeln konnten nicht gelesen werden: {0}. Die Datei blieb unverändert.",
+  "IgnoredProcessRuleNameOnly": "Prozess: {0} · {1} (nur Name)",
+  "IgnoreProcessWithoutPathWarning": "Der EXE-Pfad von {0} ist nicht verfügbar. Das Ignorieren von {1} nach App-Namen kann auch eine andere App mit demselben Namen und ohne zugänglichen Pfad betreffen. Fortfahren?"
 }

@@ -83,5 +83,10 @@
   "Theme": "Thème",
   "ThemeDark": "Sombre",
   "ThemeLight": "Clair",
-  "ThemeSystem": "Valeur système"
+  "ThemeSystem": "Valeur système",
+  "IgnoredAppRule": "Application : {0}",
+  "IgnoredProcessRule": "Processus : {0} · {1}",
+  "IgnoredLoadFailed": "Impossible de lire les exclusions : {0}. Le fichier n'a pas été modifié.",
+  "IgnoredProcessRuleNameOnly": "Processus : {0} · {1} (nom seul)",
+  "IgnoreProcessWithoutPathWarning": "Le chemin EXE de {0} est inaccessible. Exclure {1} par nom d’application peut aussi toucher une autre application de même nom dont le chemin est inaccessible. Continuer ?"
 }

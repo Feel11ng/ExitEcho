@@ -83,5 +83,10 @@
   "Theme": "Tema",
   "ThemeDark": "Oscuro",
   "ThemeLight": "Claro",
-  "ThemeSystem": "Predeterminado del sistema"
+  "ThemeSystem": "Predeterminado del sistema",
+  "IgnoredAppRule": "Aplicación: {0}",
+  "IgnoredProcessRule": "Proceso: {0} · {1}",
+  "IgnoredLoadFailed": "No se pudieron leer las exclusiones: {0}. El archivo no se modificó.",
+  "IgnoredProcessRuleNameOnly": "Proceso: {0} · {1} (solo nombre)",
+  "IgnoreProcessWithoutPathWarning": "No se puede acceder a la ruta EXE de {0}. Ignorar {1} por el nombre de la aplicación podría afectar a otra aplicación con el mismo nombre y sin ruta accesible. ¿Continuar?"
 }

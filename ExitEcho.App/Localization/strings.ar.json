@@ -99,5 +99,10 @@
   "Theme": "السمة",
   "ThemeDark": "داكن",
   "ThemeLight": "فاتح",
-  "ThemeSystem": "إعداد النظام"
+  "ThemeSystem": "إعداد النظام",
+  "IgnoredAppRule": "التطبيق: {0}",
+  "IgnoredProcessRule": "العملية: {0} · {1}",
+  "IgnoredLoadFailed": "تعذرت قراءة قواعد التجاهل: {0}. لم يتغير الملف.",
+  "IgnoredProcessRuleNameOnly": "العملية: {0} · {1} (الاسم فقط)",
+  "IgnoreProcessWithoutPathWarning": "مسار EXE الخاص بـ {0} غير متاح. قد يؤثر تجاهل {1} حسب اسم التطبيق في تطبيق آخر يحمل الاسم نفسه ولا يتوفر مساره. هل تريد المتابعة؟"
 }

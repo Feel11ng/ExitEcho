@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.0
+
+- Added app-scoped process ignore rules alongside existing whole-app ignore rules.
+- Added per-process Ignore actions in Details and management of both rule types under Ignored apps.
+- Remaining processes stay visible after a process is ignored; End leftovers acts only on visible processes.
+- Preserved existing ignored-app settings when loading older `ignored.json` files.
+- Clarified when an app-name-only rule is less precise because its executable path is unavailable.
+
 ## v0.1.0
 
 - Passive monitoring of visible Windows apps and related processes, with a configurable delay after the last window closes

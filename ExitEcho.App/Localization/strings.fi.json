@@ -83,5 +83,10 @@
   "Theme": "Teema",
   "ThemeDark": "Tumma",
   "ThemeLight": "Vaalea",
-  "ThemeSystem": "Järjestelmän oletus"
+  "ThemeSystem": "Järjestelmän oletus",
+  "IgnoredAppRule": "Sovellus: {0}",
+  "IgnoredProcessRule": "Prosessi: {0} · {1}",
+  "IgnoredLoadFailed": "Ohituksia ei voitu lukea: {0}. Tiedostoa ei muutettu.",
+  "IgnoredProcessRuleNameOnly": "Prosessi: {0} · {1} (vain nimi)",
+  "IgnoreProcessWithoutPathWarning": "Sovelluksen {0} EXE-polku ei ole käytettävissä. Prosessin {1} ohittaminen sovelluksen nimen perusteella voi vaikuttaa myös toiseen samannimiseen sovellukseen, jonka polku ei ole käytettävissä. Jatketaanko?"
 }
