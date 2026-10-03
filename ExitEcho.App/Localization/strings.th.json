@@ -83,5 +83,8 @@
   "Theme": "ธีม",
   "ThemeDark": "มืด",
   "ThemeLight": "สว่าง",
-  "ThemeSystem": "ค่าเริ่มต้นของระบบ"
+  "ThemeSystem": "ค่าเริ่มต้นของระบบ",
+  "IgnoredAppRule": "แอป: {0}",
+  "IgnoredProcessRule": "กระบวนการ: {0} · {1}",
+  "IgnoredLoadFailed": "ไม่สามารถอ่านกฎการละเว้น: {0} ไฟล์ไม่ได้ถูกเปลี่ยนแปลง"
 }

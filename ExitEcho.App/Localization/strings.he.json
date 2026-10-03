@@ -83,5 +83,8 @@
   "Theme": "ערכת נושא",
   "ThemeDark": "כהה",
   "ThemeLight": "בהיר",
-  "ThemeSystem": "ברירת מחדל של המערכת"
+  "ThemeSystem": "ברירת מחדל של המערכת",
+  "IgnoredAppRule": "יישום: {0}",
+  "IgnoredProcessRule": "תהליך: {0} · {1}",
+  "IgnoredLoadFailed": "לא ניתן לקרוא את כללי ההתעלמות: {0}. הקובץ לא השתנה."
 }

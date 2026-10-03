@@ -83,5 +83,8 @@
   "Theme": "Thema",
   "ThemeDark": "Donker",
   "ThemeLight": "Licht",
-  "ThemeSystem": "Systeemstandaard"
+  "ThemeSystem": "Systeemstandaard",
+  "IgnoredAppRule": "App: {0}",
+  "IgnoredProcessRule": "Proces: {0} · {1}",
+  "IgnoredLoadFailed": "Uitzonderingen kunnen niet worden gelezen: {0}. Het bestand is niet gewijzigd."
 }

@@ -84,5 +84,8 @@
   "Theme": "Motiv",
   "ThemeDark": "Tmavý",
   "ThemeLight": "Světlý",
-  "ThemeSystem": "Podle systému"
+  "ThemeSystem": "Podle systému",
+  "IgnoredAppRule": "Aplikace: {0}",
+  "IgnoredProcessRule": "Proces: {0} · {1}",
+  "IgnoredLoadFailed": "Výjimky se nepodařilo načíst: {0}. Soubor zůstal beze změny."
 }

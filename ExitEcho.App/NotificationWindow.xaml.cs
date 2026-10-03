@@ -15,7 +15,7 @@ public partial class NotificationWindow : Window
             ((NotificationWindow)owner).CountText.Text = Math.Round((double)args.NewValue).ToString("N0", Loc.Culture)));
 
     private readonly App _app;
-    private readonly LeftoverEvent _leftover;
+    private LeftoverEvent _leftover;
     internal string AppName => _leftover.AppName;
 
     private double AnimatedCount
@@ -52,6 +52,23 @@ public partial class NotificationWindow : Window
             ? Visibility.Collapsed : Visibility.Visible;
         RamText.Text = Loc.Format("RamValue", Math.Ceiling(_leftover.Processes.Sum(process => process.WorkingSetBytes) / 1_000_000d));
         CountText.Text = Math.Round(AnimatedCount).ToString("N0", Loc.Culture);
+    }
+
+    internal void ApplyIgnoredRules(IEnumerable<IgnoredRule> rules)
+    {
+        var filtered = IgnoreStore.Filter(_leftover, rules);
+        if (filtered is null)
+        {
+            Close();
+            return;
+        }
+        if (filtered.Processes.Count == _leftover.Processes.Count)
+            return;
+        _app.TransferHistoryId(_leftover, filtered);
+        _leftover = filtered;
+        BeginAnimation(AnimatedCountProperty, null);
+        AnimatedCount = filtered.Processes.Count;
+        RefreshLocalization();
     }
 
     private void AnimateEntrance()

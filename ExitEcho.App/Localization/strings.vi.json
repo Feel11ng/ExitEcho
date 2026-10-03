@@ -83,5 +83,8 @@
   "Theme": "Giao diện",
   "ThemeDark": "Tối",
   "ThemeLight": "Sáng",
-  "ThemeSystem": "Theo hệ thống"
+  "ThemeSystem": "Theo hệ thống",
+  "IgnoredAppRule": "Ứng dụng: {0}",
+  "IgnoredProcessRule": "Tiến trình: {0} · {1}",
+  "IgnoredLoadFailed": "Không thể đọc quy tắc bỏ qua: {0}. Tệp được giữ nguyên."
 }

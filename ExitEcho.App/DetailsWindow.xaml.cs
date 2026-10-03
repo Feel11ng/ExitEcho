@@ -12,6 +12,7 @@ namespace ExitEcho.App;
 public partial class DetailsWindow : Window
 {
     private readonly LeftoverEvent _leftover;
+    private IReadOnlyList<LeftoverProcess> _visibleProcesses;
     private int _animatedCards;
     internal event Action<int>? LeftoversEnded;
 
@@ -26,6 +27,7 @@ public partial class DetailsWindow : Window
         }
         SourceInitialized += (_, _) => ((App)System.Windows.Application.Current).ApplyWindowTheme(this);
         _leftover = leftover;
+        _visibleProcesses = leftover.Processes;
         AppTitle.Text = leftover.AppName;
         var appIcon = AppIconCache.Get(leftover.ExecutablePath);
         if (appIcon is not null)
@@ -42,15 +44,31 @@ public partial class DetailsWindow : Window
 
     private void RefreshLocalization()
     {
-        SummaryText.Text = Loc.Format(Loc.PluralKey("DetailsSummary", _leftover.Processes.Count), _leftover.Processes.Count);
+        SummaryText.Text = Loc.Format(Loc.PluralKey("DetailsSummary", _visibleProcesses.Count), _visibleProcesses.Count);
         MemorySummaryText.Text = Loc.Format("MemorySummary", Math.Ceiling(
-            _leftover.Processes.Sum(process => process.WorkingSetBytes) / 1_000_000d));
-        ProcessesList.ItemsSource = _leftover.Processes.Select(process => new
+            _visibleProcesses.Sum(process => process.WorkingSetBytes) / 1_000_000d));
+        ProcessesList.ItemsSource = _visibleProcesses.Select(process => new
         {
+            Process = process,
             process.Name,
             PidText = Loc.Format("PidValue", process.Pid),
             RamText = Loc.Format("RamValuePrecise", process.WorkingSetBytes / 1_000_000d)
         }).ToArray();
+        EndLeftoversButton.IsEnabled = _visibleProcesses.Count > 0;
+    }
+
+    internal void ApplyIgnoredRules(IEnumerable<IgnoredRule> rules)
+    {
+        var filtered = IgnoreStore.Filter(_leftover, rules);
+        _visibleProcesses = filtered?.Processes ?? [];
+        _animatedCards = 0;
+        RefreshLocalization();
+    }
+
+    private void OnIgnoreProcess(object sender, RoutedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.Button { Tag: LeftoverProcess process })
+            ((App)System.Windows.Application.Current).IgnoreProcess(_leftover, process);
     }
 
     private void AnimateOpen()
@@ -121,12 +139,18 @@ public partial class DetailsWindow : Window
 
     private void OnEndLeftovers(object sender, RoutedEventArgs e)
     {
-        var confirmation = new ConfirmationWindow(_leftover.AppName, _leftover.Processes.Count) { Owner = this };
+        var processes = _visibleProcesses.ToArray();
+        if (processes.Length == 0)
+            return;
+        var confirmation = new ConfirmationWindow(_leftover.AppName, processes.Length) { Owner = this };
         if (confirmation.ShowDialog() != true)
+            return;
+        processes = _visibleProcesses.ToArray();
+        if (processes.Length == 0)
             return;
 
         var ended = 0;
-        foreach (var item in _leftover.Processes)
+        foreach (var item in processes)
         {
             try
             {
@@ -144,7 +168,7 @@ public partial class DetailsWindow : Window
 
         LeftoversEnded?.Invoke(ended);
 
-        var result = new CompletionWindow(ended, _leftover.Processes.Count) { Owner = this };
+        var result = new CompletionWindow(ended, processes.Length) { Owner = this };
         result.ShowDialog();
         Close();
     }

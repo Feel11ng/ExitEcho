@@ -83,5 +83,8 @@
   "Theme": "Teema",
   "ThemeDark": "Tumma",
   "ThemeLight": "Vaalea",
-  "ThemeSystem": "Järjestelmän oletus"
+  "ThemeSystem": "Järjestelmän oletus",
+  "IgnoredAppRule": "Sovellus: {0}",
+  "IgnoredProcessRule": "Prosessi: {0} · {1}",
+  "IgnoredLoadFailed": "Ohituksia ei voitu lukea: {0}. Tiedostoa ei muutettu."
 }

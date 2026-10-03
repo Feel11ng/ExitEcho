@@ -83,5 +83,8 @@
   "Theme": "थीम",
   "ThemeDark": "गहरा",
   "ThemeLight": "हल्का",
-  "ThemeSystem": "सिस्टम डिफ़ॉल्ट"
+  "ThemeSystem": "सिस्टम डिफ़ॉल्ट",
+  "IgnoredAppRule": "ऐप: {0}",
+  "IgnoredProcessRule": "प्रक्रिया: {0} · {1}",
+  "IgnoredLoadFailed": "अनदेखी नियम पढ़े नहीं जा सके: {0}। फ़ाइल नहीं बदली गई।"
 }

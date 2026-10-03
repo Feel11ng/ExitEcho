@@ -83,5 +83,8 @@
   "Theme": "Tema",
   "ThemeDark": "Gelap",
   "ThemeLight": "Terang",
-  "ThemeSystem": "Bawaan sistem"
+  "ThemeSystem": "Bawaan sistem",
+  "IgnoredAppRule": "Aplikasi: {0}",
+  "IgnoredProcessRule": "Proses: {0} · {1}",
+  "IgnoredLoadFailed": "Aturan pengecualian tidak dapat dibaca: {0}. Berkas tidak diubah."
 }

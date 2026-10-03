@@ -18,8 +18,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         _app = app;
-        Loc.LanguageChanged += UpdateStatus;
-        Closed += (_, _) => Loc.LanguageChanged -= UpdateStatus;
+        Loc.LanguageChanged += OnLanguageChanged;
+        Closed += (_, _) => Loc.LanguageChanged -= OnLanguageChanged;
         SourceInitialized += (_, _) => _app.ApplyWindowTheme(this);
         StateChanged += (_, _) => UpdateMainMaximizeIcon();
         IgnoredList.ItemsSource = app.IgnoredApps;
@@ -72,6 +72,12 @@ public partial class MainWindow : Window
                 { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever,
                   EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut } });
         }
+    }
+
+    private void OnLanguageChanged()
+    {
+        UpdateStatus();
+        IgnoredList.Items.Refresh();
     }
 
     private void UpdateMainMaximizeIcon()
@@ -151,7 +157,8 @@ public partial class MainWindow : Window
         if (_ignoredExpanded)
         {
             IgnoredContent.Height = hasItems ? 120 : 22;
-            Height = hasItems ? 570 : 470;
+            MainContent.Height = hasItems ? 570 : 470;
+            Height = hasItems ? 620 : 470;
         }
     }
 
@@ -170,7 +177,10 @@ public partial class MainWindow : Window
             new DoubleAnimation(_ignoredExpanded ? 180 : 0, TimeSpan.FromMilliseconds(220))
             { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
         if (_app.IgnoredApps.Count > 0)
-            Height = _ignoredExpanded ? 570 : 470;
+        {
+            MainContent.Height = _ignoredExpanded ? 570 : 470;
+            Height = _ignoredExpanded ? 620 : 470;
+        }
     }
 
     internal void ShowIgnoredApps()
@@ -187,16 +197,16 @@ public partial class MainWindow : Window
 
     private void OnRemoveIgnored(object sender, RoutedEventArgs e)
     {
-        if (IgnoredList.SelectedItem is not string name)
+        if (IgnoredList.SelectedItem is not IgnoredRule rule)
             return;
-        if (IgnoredList.ItemContainerGenerator.ContainerFromItem(name) is not FrameworkElement row)
+        if (IgnoredList.ItemContainerGenerator.ContainerFromItem(rule) is not FrameworkElement row)
         {
-            _app.RemoveIgnored(name);
+            _app.RemoveIgnored(rule);
             return;
         }
         RemoveButton.IsEnabled = false;
         var animation = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(160));
-        animation.Completed += (_, _) => _app.RemoveIgnored(name);
+        animation.Completed += (_, _) => _app.RemoveIgnored(rule);
         row.BeginAnimation(OpacityProperty, animation);
         row.Height = row.ActualHeight;
         row.BeginAnimation(HeightProperty, new DoubleAnimation(row.ActualHeight, 0, TimeSpan.FromMilliseconds(160)));

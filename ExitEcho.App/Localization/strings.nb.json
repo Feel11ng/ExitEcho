@@ -83,5 +83,8 @@
   "Theme": "Tema",
   "ThemeDark": "Mørk",
   "ThemeLight": "Lys",
-  "ThemeSystem": "Systemstandard"
+  "ThemeSystem": "Systemstandard",
+  "IgnoredAppRule": "App: {0}",
+  "IgnoredProcessRule": "Prosess: {0} · {1}",
+  "IgnoredLoadFailed": "Kunne ikke lese unntakene: {0}. Filen ble ikke endret."
 }

@@ -85,5 +85,8 @@
   "Theme": "Тема",
   "ThemeDark": "Темна",
   "ThemeLight": "Світла",
-  "ThemeSystem": "Як у Windows"
+  "ThemeSystem": "Як у Windows",
+  "IgnoredAppRule": "Застосунок: {0}",
+  "IgnoredProcessRule": "Процес: {0} · {1}",
+  "IgnoredLoadFailed": "Не вдалося прочитати винятки: {0}. Файл залишено без змін."
 }

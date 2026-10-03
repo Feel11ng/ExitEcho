@@ -83,5 +83,8 @@
   "Theme": "テーマ",
   "ThemeDark": "ダーク",
   "ThemeLight": "ライト",
-  "ThemeSystem": "システム設定"
+  "ThemeSystem": "システム設定",
+  "IgnoredAppRule": "アプリ: {0}",
+  "IgnoredProcessRule": "プロセス: {0} · {1}",
+  "IgnoredLoadFailed": "除外設定を読み込めませんでした: {0}。ファイルは変更されていません。"
 }

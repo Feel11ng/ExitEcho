@@ -83,5 +83,8 @@
   "Theme": "Design",
   "ThemeDark": "Dunkel",
   "ThemeLight": "Hell",
-  "ThemeSystem": "Systemstandard"
+  "ThemeSystem": "Systemstandard",
+  "IgnoredAppRule": "App: {0}",
+  "IgnoredProcessRule": "Prozess: {0} · {1}",
+  "IgnoredLoadFailed": "Ignorierregeln konnten nicht gelesen werden: {0}. Die Datei blieb unverändert."
 }

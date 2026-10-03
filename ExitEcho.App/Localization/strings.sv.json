@@ -83,5 +83,8 @@
   "Theme": "Tema",
   "ThemeDark": "Mörkt",
   "ThemeLight": "Ljust",
-  "ThemeSystem": "Systemstandard"
+  "ThemeSystem": "Systemstandard",
+  "IgnoredAppRule": "App: {0}",
+  "IgnoredProcessRule": "Process: {0} · {1}",
+  "IgnoredLoadFailed": "Undantagen kunde inte läsas: {0}. Filen ändrades inte."
 }

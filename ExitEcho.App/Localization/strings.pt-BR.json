@@ -83,5 +83,8 @@
   "Theme": "Tema",
   "ThemeDark": "Escuro",
   "ThemeLight": "Claro",
-  "ThemeSystem": "Padrão do sistema"
+  "ThemeSystem": "Padrão do sistema",
+  "IgnoredAppRule": "Aplicativo: {0}",
+  "IgnoredProcessRule": "Processo: {0} · {1}",
+  "IgnoredLoadFailed": "Não foi possível ler as exclusões: {0}. O arquivo não foi alterado."
 }

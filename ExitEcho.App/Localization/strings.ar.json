@@ -99,5 +99,8 @@
   "Theme": "السمة",
   "ThemeDark": "داكن",
   "ThemeLight": "فاتح",
-  "ThemeSystem": "إعداد النظام"
+  "ThemeSystem": "إعداد النظام",
+  "IgnoredAppRule": "التطبيق: {0}",
+  "IgnoredProcessRule": "العملية: {0} · {1}",
+  "IgnoredLoadFailed": "تعذرت قراءة قواعد التجاهل: {0}. لم يتغير الملف."
 }

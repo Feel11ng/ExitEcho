@@ -85,5 +85,8 @@
   "Theme": "Motyw",
   "ThemeDark": "Ciemny",
   "ThemeLight": "Jasny",
-  "ThemeSystem": "Domyślny systemowy"
+  "ThemeSystem": "Domyślny systemowy",
+  "IgnoredAppRule": "Aplikacja: {0}",
+  "IgnoredProcessRule": "Proces: {0} · {1}",
+  "IgnoredLoadFailed": "Nie można odczytać wyjątków: {0}. Plik pozostał bez zmian."
 }

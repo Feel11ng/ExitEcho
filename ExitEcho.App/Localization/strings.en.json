@@ -83,5 +83,8 @@
   "Theme": "Theme",
   "ThemeDark": "Dark",
   "ThemeLight": "Light",
-  "ThemeSystem": "System default"
+  "ThemeSystem": "System default",
+  "IgnoredAppRule": "App: {0}",
+  "IgnoredProcessRule": "Process: {0} · {1}",
+  "IgnoredLoadFailed": "Could not read ignored rules: {0}. The file was kept unchanged."
 }
