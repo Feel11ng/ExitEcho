@@ -118,21 +118,21 @@
           <ItemsControl.ItemTemplate>
             <DataTemplate>
               <Border x:Name="ProcessCard" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
-                      BorderThickness="1" CornerRadius="9" Padding="13,10"
-                      Margin="0,0,0,6" MinHeight="72" Opacity="0"
+                       BorderThickness="1" CornerRadius="7" Padding="11,7"
+                       Margin="0,0,0,4" MinHeight="58" Opacity="0"
                       Loaded="OnProcessCardLoaded">
                 <Border.RenderTransform><TranslateTransform Y="5"/></Border.RenderTransform>
                 <Grid>
                   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                   <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding Name}" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}" FontSize="14" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding Name}" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}" FontSize="13" FontWeight="SemiBold"
                                TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
                     <Button Grid.Column="1" Tag="{Binding Process}" Content="{DynamicResource L_Ignore}" Style="{StaticResource DetailsAction}"
-                            Height="26" Padding="8,0" Margin="9,-3,-3,-3" FontSize="11" Click="OnIgnoreProcess"
+                            Height="24" Padding="8,0" Margin="9,-2,-2,-2" FontSize="11" Click="OnIgnoreProcess"
                             AutomationProperties.Name="{DynamicResource L_Ignore}"/>
                   </Grid>
-                  <Grid Grid.Row="1" Margin="0,6,0,0">
+                  <Grid Grid.Row="1" Margin="0,3,0,0">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="{Binding PidText}" FlowDirection="LeftToRight" Foreground="{DynamicResource MutedBrush}" FontSize="11.5"/>
                     <TextBlock Grid.Column="1" Text="{Binding RamText}" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}" FontSize="12"
@@ -143,7 +143,6 @@
               <DataTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                   <Setter TargetName="ProcessCard" Property="Background" Value="{DynamicResource CardHoverBrush}"/>
-                  <Setter TargetName="ProcessCard" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                 </Trigger>
               </DataTemplate.Triggers>
             </DataTemplate>

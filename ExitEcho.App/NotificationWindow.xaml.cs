@@ -133,12 +133,6 @@ public partial class NotificationWindow : Window
         ((TranslateTransform)((TransformGroup)DetailsArrow.RenderTransform).Children[1])
         .BeginAnimation(TranslateTransform.XProperty, EaseTo(0));
 
-    private void OnIgnoreEnter(object sender, System.Windows.Input.MouseEventArgs e) =>
-        ((RotateTransform)IgnoreIcon.RenderTransform).BeginAnimation(RotateTransform.AngleProperty, EaseTo(-9));
-
-    private void OnIgnoreLeave(object sender, System.Windows.Input.MouseEventArgs e) =>
-        ((RotateTransform)IgnoreIcon.RenderTransform).BeginAnimation(RotateTransform.AngleProperty, EaseTo(0));
-
     private void OnDetails(object sender, RoutedEventArgs e)
     {
         _app.OpenDetails(_leftover, this);

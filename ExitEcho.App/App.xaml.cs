@@ -55,6 +55,7 @@ public partial class App : System.Windows.Application
     internal bool IsPaused => _paused;
     internal int EventCount => _eventCount;
     internal ObservableCollection<IgnoredRule> IgnoredApps => _ignoredItems;
+    internal ObservableCollection<HistoryEntry> HistoryEntries => _history.Entries;
     internal AppSettings Settings => _settings;
 
     internal void ApplyWindowTheme(Window window)

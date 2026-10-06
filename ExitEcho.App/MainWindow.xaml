@@ -114,8 +114,9 @@
     </Grid>
 
     <Grid x:Name="MainContent" Width="500" Height="470" HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="True">
-    <StackPanel Margin="0,73,0,0" VerticalAlignment="Top" HorizontalAlignment="Center">
-      <Canvas Width="220" Height="127">
+    <StackPanel Margin="0,71,0,0" VerticalAlignment="Top" HorizontalAlignment="Center">
+      <Canvas Width="220" Height="108" RenderTransformOrigin="0.5,0.5">
+        <Canvas.RenderTransform><ScaleTransform ScaleX="0.72" ScaleY="0.72"/></Canvas.RenderTransform>
         <ContentControl x:Name="EchoBack" Style="{StaticResource EchoOutline}" Canvas.Left="77" Canvas.Top="-3"
                         Foreground="{DynamicResource EchoBackBrush}" Background="Transparent" Opacity="0.05">
           <ContentControl.RenderTransform><TranslateTransform x:Name="EchoBackTranslate" X="-17" Y="10"/></ContentControl.RenderTransform>
@@ -130,13 +131,13 @@
         </ContentControl>
       </Canvas>
       <TextBlock x:Name="MonitoringText" Text="{DynamicResource L_MainMonitoring}" Foreground="{DynamicResource TextBrush}"
-                 FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                 FontSize="21" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
       <TextBlock x:Name="MonitoringSubtitle" Text="{DynamicResource L_MainWatchSubtitle}"
                  Foreground="{DynamicResource MutedBrush}" FontSize="12.5" TextWrapping="Wrap" TextAlignment="Center"
                  Width="350" HorizontalAlignment="Center" Margin="0,8,0,0"/>
     </StackPanel>
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,282,0,0">
+    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,250,0,0">
       <TextBlock x:Name="EventCountText" Text="0" Foreground="{DynamicResource TextBrush}" FontSize="30"
                  FontWeight="SemiBold" TextAlignment="Center" HorizontalAlignment="Center">
         <TextBlock.RenderTransform><TranslateTransform x:Name="EventCountTranslate"/></TextBlock.RenderTransform>
@@ -145,7 +146,24 @@
                  TextAlignment="Center"/>
     </StackPanel>
 
-    <Grid Margin="27,352,27,0" VerticalAlignment="Top">
+    <Button Height="49" Margin="27,307,27,0" VerticalAlignment="Top" Style="{StaticResource ConceptSectionButton}"
+            Click="OnOpenHistory" AutomationProperties.Name="{DynamicResource L_RecentLeftovers}">
+      <Grid Margin="8,0,8,0">
+        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <TextBlock Text="{DynamicResource L_RecentLeftovers}" Foreground="{DynamicResource MutedBrush}" FontSize="11.5"/>
+        <Path Grid.Column="1" Data="{StaticResource IconChevron}" Stroke="{DynamicResource MutedBrush}" Width="14" Height="14"
+              Stretch="Uniform" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+          <Path.RenderTransform><RotateTransform Angle="-90"/></Path.RenderTransform>
+        </Path>
+        <TextBlock x:Name="RecentAppText" Grid.Row="1" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}"
+                   FontSize="12.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,3,10,0"/>
+        <TextBlock x:Name="RecentMetaText" Grid.Row="1" Grid.Column="1" Foreground="{DynamicResource MutedBrush}"
+                   FontSize="11.5" MaxWidth="190" TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom" Margin="0,3,0,0"/>
+      </Grid>
+    </Button>
+
+    <Grid Margin="27,365,27,0" VerticalAlignment="Top">
       <Button x:Name="IgnoredToggle" Height="36" VerticalAlignment="Top" Style="{StaticResource ConceptSectionButton}"
               Click="OnIgnoredToggle" AutomationProperties.Name="{DynamicResource L_IgnoredApps}">
         <Grid Margin="8,0,8,0">
@@ -184,13 +202,6 @@
       <StackPanel Orientation="Horizontal">
         <Path x:Name="PauseIcon" Data="{StaticResource IconPause}" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0"/>
         <TextBlock x:Name="PauseButtonText" Text="{DynamicResource L_PauseMonitoring}" Foreground="{DynamicResource TextBrush}" FontSize="12" FontWeight="Medium" VerticalAlignment="Center"/>
-      </StackPanel>
-    </Button>
-    <Button MinWidth="151" Padding="12,0" Height="30" Margin="0,0,27,18" VerticalAlignment="Bottom" HorizontalAlignment="Right"
-            Style="{StaticResource ConceptButton}" Click="OnOpenHistory" AutomationProperties.Name="{DynamicResource L_RecentLeftovers}">
-      <StackPanel Orientation="Horizontal">
-        <Path Data="{StaticResource IconLeftovers}" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0"/>
-        <TextBlock Text="{DynamicResource L_RecentLeftovers}" Foreground="{DynamicResource TextBrush}" FontSize="12" FontWeight="Medium" VerticalAlignment="Center"/>
       </StackPanel>
     </Button>
     </Grid>

@@ -24,7 +24,9 @@ public partial class MainWindow : Window
         StateChanged += (_, _) => UpdateMainMaximizeIcon();
         IgnoredList.ItemsSource = app.IgnoredApps;
         app.IgnoredApps.CollectionChanged += (_, _) => UpdateIgnoredState();
+        app.HistoryEntries.CollectionChanged += (_, _) => UpdateRecentActivity();
         UpdateIgnoredState();
+        UpdateRecentActivity();
         UpdateStatus();
         UpdateMainMaximizeIcon();
         Loaded += (_, _) => EventCountText.BeginAnimation(OpacityProperty,
@@ -77,7 +79,16 @@ public partial class MainWindow : Window
     private void OnLanguageChanged()
     {
         UpdateStatus();
+        UpdateRecentActivity();
         IgnoredList.Items.Refresh();
+    }
+
+    private void UpdateRecentActivity()
+    {
+        var latest = _app.HistoryEntries.FirstOrDefault();
+        RecentAppText.Text = latest?.AppName ?? Loc.Get("NoLeftovers");
+        RecentMetaText.Text = latest is null ? string.Empty : $"{latest.ProcessCountText} · {latest.RamText}";
+        RecentMetaText.ToolTip = RecentMetaText.Text;
     }
 
     private void UpdateMainMaximizeIcon()

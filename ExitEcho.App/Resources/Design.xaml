@@ -23,8 +23,8 @@
   <LinearGradientBrush x:Key="NotificationBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
     <GradientStop Color="#FFFFFF" Offset="0"/><GradientStop Color="#F5F8F9" Offset="1"/>
   </LinearGradientBrush>
-  <CornerRadius x:Key="ControlRadius">8</CornerRadius>
-  <CornerRadius x:Key="CardRadius">10</CornerRadius>
+  <CornerRadius x:Key="ControlRadius">7</CornerRadius>
+  <CornerRadius x:Key="CardRadius">8</CornerRadius>
 
   <Style TargetType="TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
