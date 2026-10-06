@@ -8,7 +8,7 @@ ExitEcho watches Windows apps with visible windows and reports related processes
 
 ![ExitEcho demonstration: a demo app closes and ExitEcho detects remaining processes](assets/demo.gif)
 
-**Windows 10/11 x64** · [Download v0.2.0](https://github.com/Feel11ng/ExitEcho/releases/tag/v0.2.0)
+**Windows 10/11 x64** · [Download v0.3.0](https://github.com/Feel11ng/ExitEcho/releases/tag/v0.3.0)
 
 ## What it does
 
@@ -32,7 +32,7 @@ The demo shows real ExitEcho windows with illustrative process data.
 
 ## Install and use
 
-Download [ExitEcho-v0.2.0-win-x64.zip](https://github.com/Feel11ng/ExitEcho/releases/download/v0.2.0/ExitEcho-v0.2.0-win-x64.zip), extract it, and run `ExitEcho.exe`. No installer or administrator rights are needed.
+Download [ExitEcho-v0.3.0-win-x64.zip](https://github.com/Feel11ng/ExitEcho/releases/download/v0.3.0/ExitEcho-v0.3.0-win-x64.zip), extract it, and run `ExitEcho.exe`. No installer or administrator rights are needed.
 
 ExitEcho starts in the tray and monitors in the background. Open it from the tray icon. A notification leads to **Details**, where you can inspect processes, ignore one process, or end the listed leftovers after confirmation. Use **Ignore** on the notification to ignore the whole app. Manage both kinds of rules under Ignored apps. You can pause monitoring from the tray or main window. The default notification delay is eight seconds; Settings allows 3–60 seconds.
 

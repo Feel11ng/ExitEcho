@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.0
+
+- Deduplicated notifications for the same app and updated open notifications with fresh process data.
+- Limited visible notifications to three, queued additional notifications, and smoothly repositioned cards when space opens.
+- Added Reduced Motion support and refined native UI animations.
+- Fixed opening History and cleaned up the Main, Notification, Details, and Settings UI.
+
 ## v0.2.0
 
 - Added app-scoped process ignore rules alongside existing whole-app ignore rules.
