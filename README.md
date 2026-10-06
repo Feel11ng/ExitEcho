@@ -4,21 +4,19 @@
 
 **See what keeps running after an app exits.**
 
-ExitEcho is a local Windows utility that shows related processes still running after an application's visible windows close. It lets you inspect them and decide what to do.
+ExitEcho watches Windows apps with visible windows and reports related processes that remain after those windows close. You can inspect the processes before deciding whether to ignore or end them.
 
 ![ExitEcho demonstration: a demo app closes and ExitEcho detects remaining processes](assets/demo.gif)
 
-**Windows 10/11 x64** · [Download the portable ZIP from GitHub Releases](https://github.com/Feel11ng/ExitEcho/releases)
+**Windows 10/11 x64** · [Download v0.2.0](https://github.com/Feel11ng/ExitEcho/releases/tag/v0.2.0)
 
-## Features
+## What it does
 
-- Watches apps you open normally and reports related processes left running after the last window closes.
-- Shows process names, PIDs, and RAM; optional **End leftovers** always asks for confirmation.
-- Keeps local exit history and separate app-wide and process-specific ignore rules.
-- Runs in the system tray with pause and resume controls; only one GUI instance runs at a time.
-- Provides light and dark themes, plus settings for language, optional Windows startup, notifications, and the detection delay.
-- Offers English and 26 other UI languages, including right-to-left Arabic and Hebrew.
-- Includes `exitecho watch` and `exitecho run` CLI modes for development and debugging.
+- Watches apps you open normally and waits after their last visible window closes before reporting leftovers.
+- Shows each remaining process's name, PID, and RAM. **End leftovers** is manual and requires confirmation.
+- Keeps a local exit history. **Ignore app** suppresses alerts for an entire app; **Ignore process** excludes one process for that app while leaving other processes visible.
+- Runs in the tray with pause and resume controls and a single GUI instance.
+- Supports light and dark themes and 27 UI languages. Settings cover theme, language (or the Windows default), optional startup, notifications, and detection delay.
 
 ## Screenshots
 
@@ -30,24 +28,29 @@ ExitEcho is a local Windows utility that shows related processes still running a
 
 [![Watch the full ExitEcho demo](assets/demo-cover.png)](assets/demo.mp4)
 
-The demo uses real ExitEcho windows with illustrative process data.
+The demo shows real ExitEcho windows with illustrative process data.
 
-## Installation and use
+## Install and use
 
-Download `ExitEcho-v0.2.0-win-x64.zip` from [Releases](https://github.com/Feel11ng/ExitEcho/releases), extract it, and run `ExitEcho.exe`. The portable build needs no installer or administrator rights.
+Download [ExitEcho-v0.2.0-win-x64.zip](https://github.com/Feel11ng/ExitEcho/releases/download/v0.2.0/ExitEcho-v0.2.0-win-x64.zip), extract it, and run `ExitEcho.exe`. No installer or administrator rights are needed.
 
-ExitEcho starts in the system tray and monitors in the background. Open it from the tray icon. When it finds related processes after an app closes, choose **Details** to inspect them, **Ignore app** to suppress future alerts for the whole app, or **Ignore process** beside a process in Details to exclude only that process for that app. Other processes remain visible; **End leftovers** applies only to the listed processes and asks for confirmation. Manage both kinds of rules under Ignored apps. Monitoring can be paused from the tray or main window. Settings let you adjust the notification delay (3–60 seconds; eight by default), theme, language, notifications, and optional Windows startup.
+ExitEcho starts in the tray and monitors in the background. Open it from the tray icon. A notification leads to **Details**, where you can inspect processes, ignore one process, or end the listed leftovers after confirmation. Use **Ignore** on the notification to ignore the whole app. Manage both kinds of rules under Ignored apps. You can pause monitoring from the tray or main window. The default notification delay is eight seconds; Settings allows 3–60 seconds.
 
-The CLI is built separately from source:
+## CLI and building
+
+The CLI is built separately from source and remains in English:
 
 ```text
 exitecho watch
 exitecho run "<path-to-exe>" [args]
 ```
 
-## Languages
+Build on Windows 10/11 x64 with the .NET 8 SDK:
 
-The UI supports 27 languages: English, Russian, German, French, Spanish, Brazilian and European Portuguese, Italian, Polish, Ukrainian, Turkish, Dutch, Czech, Swedish, Norwegian, Danish, Finnish, Simplified and Traditional Chinese, Japanese, Korean, Arabic, Hebrew, Hindi, Indonesian, Vietnamese, and Thai. Select a language in Settings or use the Windows system language. The CLI is in English.
+```powershell
+dotnet build ExitEcho.sln -c Release
+dotnet publish ExitEcho.App/ExitEcho.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+```
 
 ## Privacy
 
@@ -55,15 +58,6 @@ All settings and history stay local. No account, telemetry, or network requests.
 
 ## Limitations
 
-ExitEcho tracks apps it observes with visible top-level windows. Inaccessible, short-lived, or detached processes may be missed. ExitEcho does not automatically determine whether a process is intentionally running in the background. Some apps intentionally continue running; ending processes can interrupt their work, so ExitEcho never does it automatically. Process ignore rules use the app's executable path when available; a rule based only on the app name is less precise and is labeled as such.
-
-## Build from source
-
-On Windows 10/11 x64 with the .NET 8 SDK:
-
-```powershell
-dotnet build ExitEcho.sln -c Release
-dotnet publish ExitEcho.App/ExitEcho.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
-```
+ExitEcho observes apps with visible top-level windows, so it may miss inaccessible, short-lived, or detached processes. It cannot tell whether background activity is intentional; some apps continue running by design. It never ends processes automatically. Process ignore rules use the app's EXE path when available. A rule based only on the app name is less precise and is labeled in the UI.
 
 See the [changelog](CHANGELOG.md), [third-party notices](THIRD_PARTY_NOTICES.md), and [MIT license](LICENSE). Created by **Feel11ng**.

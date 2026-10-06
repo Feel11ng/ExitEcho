@@ -1,4 +1,5 @@
 # .NET and Visual Studio
+/AGENTS.md
 **/bin/
 **/obj/
 .vs/
