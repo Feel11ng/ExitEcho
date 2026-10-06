@@ -1,6 +1,7 @@
 <Window x:Class="ExitEcho.App.DetailsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:app="clr-namespace:ExitEcho.App"
         xmlns:local="clr-namespace:ExitEcho.App"
         Title="{DynamicResource L_Brand}" Icon="/Assets/ExitEcho.ico" Width="456" MinWidth="440" FlowDirection="{DynamicResource LocalFlowDirection}"
         Height="390" MinHeight="360" Opacity="0" ResizeMode="CanResize"
@@ -35,31 +36,35 @@
               <Trigger Property="IsMouseOver" Value="True">
                 <Trigger.EnterActions><BeginStoryboard><Storyboard>
                   <DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
-                                   To="0.55" Duration="0:0:0.19"/>
+                                   To="0.55" Duration="0:0:0.14"/>
                 </Storyboard></BeginStoryboard></Trigger.EnterActions>
                 <Trigger.ExitActions><BeginStoryboard><Storyboard>
                   <DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
-                                   To="0" Duration="0:0:0.19"/>
+                                   To="0" Duration="0:0:0.14"/>
                 </Storyboard></BeginStoryboard></Trigger.ExitActions>
               </Trigger>
-              <Trigger Property="IsPressed" Value="True">
-                <Trigger.EnterActions><BeginStoryboard><Storyboard>
+              <MultiDataTrigger>
+                <MultiDataTrigger.Conditions>
+                  <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
+                  <Condition Binding="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}" Value="True"/>
+                </MultiDataTrigger.Conditions>
+                <MultiDataTrigger.EnterActions><BeginStoryboard><Storyboard>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface"
                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
                                    To="0.985" Duration="0:0:0.09"/>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface"
                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
                                    To="0.985" Duration="0:0:0.09"/>
-                </Storyboard></BeginStoryboard></Trigger.EnterActions>
-                <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                </Storyboard></BeginStoryboard></MultiDataTrigger.EnterActions>
+                <MultiDataTrigger.ExitActions><BeginStoryboard><Storyboard>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface"
                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                                   To="1" Duration="0:0:0.16"/>
+                                   To="1" Duration="0:0:0.12"/>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface"
                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                                   To="1" Duration="0:0:0.16"/>
-                </Storyboard></BeginStoryboard></Trigger.ExitActions>
-              </Trigger>
+                                   To="1" Duration="0:0:0.12"/>
+                </Storyboard></BeginStoryboard></MultiDataTrigger.ExitActions>
+              </MultiDataTrigger>
               <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="ActionSurface" Property="BorderBrush" Value="{DynamicResource FocusBrush}"/></Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>

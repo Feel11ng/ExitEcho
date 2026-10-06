@@ -13,24 +13,32 @@ public partial class MainWindow : Window
     private bool? _lastPaused;
     private bool _ignoredExpanded;
     private int _lastEventCount = -1;
+    private Guid? _recentEntryId;
+    private int _recentTransition;
+    private static bool MotionEnabled => SystemParameters.ClientAreaAnimation;
 
     public MainWindow(App app)
     {
         InitializeComponent();
         _app = app;
         Loc.LanguageChanged += OnLanguageChanged;
-        Closed += (_, _) => Loc.LanguageChanged -= OnLanguageChanged;
+        SystemParameters.StaticPropertyChanged += OnSystemParametersChanged;
+        Closed += (_, _) =>
+        {
+            Loc.LanguageChanged -= OnLanguageChanged;
+            SystemParameters.StaticPropertyChanged -= OnSystemParametersChanged;
+        };
         SourceInitialized += (_, _) => _app.ApplyWindowTheme(this);
         StateChanged += (_, _) => UpdateMainMaximizeIcon();
         IgnoredList.ItemsSource = app.IgnoredApps;
         app.IgnoredApps.CollectionChanged += (_, _) => UpdateIgnoredState();
-        app.HistoryEntries.CollectionChanged += (_, _) => UpdateRecentActivity();
+        app.HistoryEntries.CollectionChanged += (_, _) => UpdateRecentActivity(true);
         UpdateIgnoredState();
         UpdateRecentActivity();
         UpdateStatus();
         UpdateMainMaximizeIcon();
         Loaded += (_, _) => EventCountText.BeginAnimation(OpacityProperty,
-            new DoubleAnimation(0.74, 1, TimeSpan.FromMilliseconds(400))
+            new DoubleAnimation(0.74, 1, TimeSpan.FromMilliseconds(MotionEnabled ? 400 : 120))
             { EasingFunction = new SineEase { EasingMode = EasingMode.EaseOut } });
     }
 
@@ -62,17 +70,25 @@ public partial class MainWindow : Window
             _echoMotion?.Stop(this);
             EchoMid.Opacity = 0.07;
             EchoBack.Opacity = 0.04;
-            EchoFront.BeginAnimation(OpacityProperty, new DoubleAnimation(0.64, TimeSpan.FromMilliseconds(240)));
+            EchoFront.BeginAnimation(OpacityProperty, new DoubleAnimation(0.64, TimeSpan.FromMilliseconds(MotionEnabled ? 240 : 120)));
             MonitoringDot.Opacity = 1;
         }
         else
         {
-            EchoFront.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(240)));
-            StartEchoMotion();
-            MonitoringDot.BeginAnimation(OpacityProperty,
-                new DoubleAnimation(1, 0.78, TimeSpan.FromMilliseconds(2200))
-                { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever,
-                  EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut } });
+            EchoFront.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(MotionEnabled ? 240 : 120)));
+            if (MotionEnabled)
+            {
+                StartEchoMotion();
+                MonitoringDot.BeginAnimation(OpacityProperty,
+                    new DoubleAnimation(1, 0.78, TimeSpan.FromMilliseconds(2200))
+                    { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever,
+                      EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut } });
+            }
+            else
+            {
+                _echoMotion?.Stop(this);
+                MonitoringDot.Opacity = 1;
+            }
         }
     }
 
@@ -83,9 +99,45 @@ public partial class MainWindow : Window
         IgnoredList.Items.Refresh();
     }
 
-    private void UpdateRecentActivity()
+    private void OnSystemParametersChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(SystemParameters.ClientAreaAnimation)) return;
+        _echoMotion?.Stop(this);
+        _lastPaused = null;
+        UpdateStatus();
+    }
+
+    private void UpdateRecentActivity(bool animate = false)
     {
         var latest = _app.HistoryEntries.FirstOrDefault();
+        if (animate && IsLoaded && latest is not null && latest.Id != _recentEntryId && MotionEnabled)
+        {
+            var transition = ++_recentTransition;
+            var fadeOut = new DoubleAnimation(RecentActivityRow.Opacity, 0, TimeSpan.FromMilliseconds(90));
+            fadeOut.Completed += (_, _) =>
+            {
+                if (transition != _recentTransition) return;
+                SetRecentActivity(latest);
+                RecentActivityRow.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(180))
+                { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
+                RecentActivityTranslate.BeginAnimation(TranslateTransform.YProperty,
+                    new DoubleAnimation(4, 0, TimeSpan.FromMilliseconds(180))
+                    { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
+            };
+            RecentActivityRow.BeginAnimation(OpacityProperty, fadeOut);
+            return;
+        }
+        ++_recentTransition;
+        RecentActivityRow.BeginAnimation(OpacityProperty, null);
+        RecentActivityTranslate.BeginAnimation(TranslateTransform.YProperty, null);
+        RecentActivityRow.Opacity = 1;
+        RecentActivityTranslate.Y = 0;
+        SetRecentActivity(latest);
+    }
+
+    private void SetRecentActivity(HistoryEntry? latest)
+    {
+        _recentEntryId = latest?.Id;
         RecentAppText.Text = latest?.AppName ?? Loc.Get("NoLeftovers");
         RecentMetaText.Text = latest is null ? string.Empty : $"{latest.ProcessCountText} · {latest.RamText}";
         RecentMetaText.ToolTip = RecentMetaText.Text;
@@ -107,6 +159,7 @@ public partial class MainWindow : Window
 
     private void StartEchoMotion()
     {
+        if (!MotionEnabled) return;
         _echoMotion = new Storyboard { RepeatBehavior = RepeatBehavior.Forever };
         AddTrack(_echoMotion, EchoMid, OpacityProperty, (0, .1), (.4, .1), (1.1, .44), (1.55, .44), (2.75, .08), (3.8, .08));
         AddTrack(_echoMotion, EchoMidTranslate, System.Windows.Media.TranslateTransform.XProperty,
@@ -123,6 +176,7 @@ public partial class MainWindow : Window
 
     private void AnimateNewLeftover()
     {
+        if (!MotionEnabled) return;
         var ease = new SineEase { EasingMode = EasingMode.EaseInOut };
         EventCountText.BeginAnimation(OpacityProperty,
             new DoubleAnimation(0.45, 1, TimeSpan.FromMilliseconds(300)) { EasingFunction = ease });
@@ -167,9 +221,7 @@ public partial class MainWindow : Window
         RemoveButton.IsEnabled = hasItems && IgnoredList.SelectedItem is not null;
         if (_ignoredExpanded)
         {
-            IgnoredContent.Height = hasItems ? 120 : 22;
-            MainContent.Height = hasItems ? 570 : 470;
-            Height = hasItems ? 620 : 470;
+            AnimateIgnoredLayout(hasItems ? 120 : 22, hasItems ? 570 : 470, hasItems ? 620 : 470);
         }
     }
 
@@ -177,21 +229,32 @@ public partial class MainWindow : Window
     {
         _ignoredExpanded = !_ignoredExpanded;
         var targetContentHeight = _ignoredExpanded ? (_app.IgnoredApps.Count > 0 ? 120 : 22) : 0;
-        var currentContentHeight = IgnoredContent.ActualHeight;
-        IgnoredContent.Height = targetContentHeight;
-        IgnoredContent.BeginAnimation(HeightProperty,
-            new DoubleAnimation(currentContentHeight, targetContentHeight, TimeSpan.FromMilliseconds(220))
-            { FillBehavior = FillBehavior.Stop, EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
+        AnimateIgnoredLayout(targetContentHeight,
+            _ignoredExpanded && _app.IgnoredApps.Count > 0 ? 570 : 470,
+            _ignoredExpanded && _app.IgnoredApps.Count > 0 ? 620 : 470);
         IgnoredContent.BeginAnimation(OpacityProperty,
-            new DoubleAnimation(_ignoredExpanded ? 1 : 0, TimeSpan.FromMilliseconds(180)));
+            new DoubleAnimation(_ignoredExpanded ? 1 : 0, TimeSpan.FromMilliseconds(MotionEnabled ? 180 : 120)));
         IgnoredChevronRotate.BeginAnimation(System.Windows.Media.RotateTransform.AngleProperty,
-            new DoubleAnimation(_ignoredExpanded ? 180 : 0, TimeSpan.FromMilliseconds(220))
-            { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
-        if (_app.IgnoredApps.Count > 0)
-        {
-            MainContent.Height = _ignoredExpanded ? 570 : 470;
-            Height = _ignoredExpanded ? 620 : 470;
-        }
+            MotionEnabled ? new DoubleAnimation(_ignoredExpanded ? 180 : 0, TimeSpan.FromMilliseconds(220))
+            { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } } : null);
+        if (!MotionEnabled) IgnoredChevronRotate.Angle = _ignoredExpanded ? 180 : 0;
+    }
+
+    private void AnimateIgnoredLayout(double contentHeight, double mainHeight, double windowHeight)
+    {
+        AnimateHeight(IgnoredContent, contentHeight);
+        AnimateHeight(MainContent, mainHeight);
+        AnimateHeight(this, windowHeight);
+    }
+
+    private static void AnimateHeight(FrameworkElement element, double target)
+    {
+        var from = element.ActualHeight;
+        element.BeginAnimation(HeightProperty, null);
+        element.Height = target;
+        if (MotionEnabled && Math.Abs(from - target) > 0.5)
+            element.BeginAnimation(HeightProperty, new DoubleAnimation(from, target, TimeSpan.FromMilliseconds(220))
+            { FillBehavior = FillBehavior.Stop, EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
     }
 
     internal void ShowIgnoredApps()
@@ -216,9 +279,13 @@ public partial class MainWindow : Window
             return;
         }
         RemoveButton.IsEnabled = false;
+        if (!MotionEnabled) { _app.RemoveIgnored(rule); return; }
         var animation = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(160));
         animation.Completed += (_, _) => _app.RemoveIgnored(rule);
         row.BeginAnimation(OpacityProperty, animation);
+        var translation = new TranslateTransform();
+        row.RenderTransform = translation;
+        translation.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0, -3, TimeSpan.FromMilliseconds(160)));
         row.Height = row.ActualHeight;
         row.BeginAnimation(HeightProperty, new DoubleAnimation(row.ActualHeight, 0, TimeSpan.FromMilliseconds(160)));
     }

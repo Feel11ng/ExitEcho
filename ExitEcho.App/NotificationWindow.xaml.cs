@@ -16,7 +16,10 @@ public partial class NotificationWindow : Window
 
     private readonly App _app;
     private LeftoverEvent _leftover;
+    private bool _closing;
     internal string AppName => _leftover.AppName;
+    internal string IdentityKey => App.NotificationKey(_leftover);
+    internal bool IsClosing => _closing;
 
     private double AnimatedCount
     {
@@ -29,14 +32,7 @@ public partial class NotificationWindow : Window
         InitializeComponent();
         _app = app;
         _leftover = leftover;
-        AppNameText.Text = leftover.AppName;
-        var appIcon = AppIconCache.Get(leftover.ExecutablePath);
-        if (appIcon is not null)
-        {
-            AppIcon.Source = appIcon;
-            AppIcon.Visibility = Visibility.Visible;
-            AppIconFallback.Visibility = Visibility.Collapsed;
-        }
+        UpdateAppIdentity();
         RefreshLocalization();
         Loc.LanguageChanged += RefreshLocalization;
         SourceInitialized += (_, _) => _app.ApplyWindowTheme(this);
@@ -52,6 +48,30 @@ public partial class NotificationWindow : Window
             ? Visibility.Collapsed : Visibility.Visible;
         RamText.Text = Loc.Format("RamValue", Math.Ceiling(_leftover.Processes.Sum(process => process.WorkingSetBytes) / 1_000_000d));
         CountText.Text = Math.Round(AnimatedCount).ToString("N0", Loc.Culture);
+    }
+
+    internal void UpdateLeftover(LeftoverEvent leftover)
+    {
+        var oldCount = AnimatedCount;
+        _leftover = leftover;
+        UpdateAppIdentity();
+        RefreshLocalization();
+        BeginAnimation(AnimatedCountProperty, null);
+        AnimatedCount = leftover.Processes.Count;
+        if (SystemParameters.ClientAreaAnimation && Math.Abs(oldCount - AnimatedCount) > 0.5)
+            BeginAnimation(AnimatedCountProperty, new DoubleAnimation(oldCount, AnimatedCount,
+                TimeSpan.FromMilliseconds(140))
+            { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
+        DetectedStatus.BeginAnimation(OpacityProperty, null);
+        DetectedStatus.Opacity = 1;
+    }
+
+    private void UpdateAppIdentity()
+    {
+        AppNameText.Text = _leftover.AppName;
+        AppIcon.Source = AppIconCache.Get(_leftover.ExecutablePath);
+        AppIcon.Visibility = AppIcon.Source is null ? Visibility.Collapsed : Visibility.Visible;
+        AppIconFallback.Visibility = AppIcon.Source is null ? Visibility.Visible : Visibility.Collapsed;
     }
 
     internal void ApplyIgnoredRules(IEnumerable<IgnoredRule> rules)
@@ -73,23 +93,22 @@ public partial class NotificationWindow : Window
 
     private void AnimateEntrance()
     {
-        PreludeWindow.BeginAnimation(OpacityProperty, Fade(0.7, 0, 360, 230));
-        var closeScale = (ScaleTransform)PreludeWindow.RenderTransform;
-        closeScale.BeginAnimation(ScaleTransform.ScaleXProperty, Move(1, 0.97, 360, 230));
-        closeScale.BeginAnimation(ScaleTransform.ScaleYProperty, Move(1, 0.97, 360, 230));
-
-        AnimateTrail(PreludeMiddle, 400, 500, 0.34, 0, 11, 4, -8);
-        AnimateTrail(PreludeBack, 470, 540, 0.2, 0, 16, 6, -11);
-        ToastCard.BeginAnimation(OpacityProperty, Fade(0, 1, 360, 730));
-        ToastScale.BeginAnimation(ScaleTransform.ScaleXProperty, Move(0.982, 1, 360, 730));
-        ToastScale.BeginAnimation(ScaleTransform.ScaleYProperty, Move(0.982, 1, 360, 730));
-        ToastSlide.BeginAnimation(TranslateTransform.YProperty, Move(5, 0, 360, 730));
-        AnimateTrail(EchoMiddle, 810, 1100, 0.48, 0.16, 9, 6, -7);
-        AnimateTrail(EchoBack, 880, 1200, 0.29, 0.09, 14, 8, -10);
-        TextContent.BeginAnimation(OpacityProperty, Fade(0, 1, 300, 970));
-        BeginAnimation(AnimatedCountProperty, Move(0, _leftover.Processes.Count, 360, 1090));
-        RamText.BeginAnimation(OpacityProperty, Fade(0, 1, 300, 1160));
-        DetectedStatus.BeginAnimation(OpacityProperty, Fade(0, 1, 300, 1230));
+        PreludeWindow.Opacity = 0;
+        ToastScale.ScaleX = ToastScale.ScaleY = 1;
+        var motion = SystemParameters.ClientAreaAnimation;
+        ToastCard.BeginAnimation(OpacityProperty, Fade(0, 1, motion ? 200 : 120));
+        if (motion)
+            ToastSlide.BeginAnimation(TranslateTransform.YProperty, Move(6, 0, 200));
+        else
+            ToastSlide.Y = 0;
+        EchoMiddle.BeginAnimation(OpacityProperty, Fade(0, 0.16, 140, motion ? 35 : 0));
+        EchoBack.BeginAnimation(OpacityProperty, Fade(0, 0.09, 140, motion ? 55 : 0));
+        TextContent.BeginAnimation(OpacityProperty, Fade(0, 1, motion ? 160 : 120, motion ? 50 : 0));
+        RamText.BeginAnimation(OpacityProperty, Fade(0, 1, motion ? 130 : 120, motion ? 75 : 0));
+        DetectedStatus.BeginAnimation(OpacityProperty, Fade(0, 1, motion ? 130 : 120, motion ? 80 : 0));
+        BeginAnimation(AnimatedCountProperty, motion
+            ? Move(0, _leftover.Processes.Count, 145, 65)
+            : new DoubleAnimation(_leftover.Processes.Count, TimeSpan.Zero));
     }
 
     private static DoubleAnimation Move(double from, double to, int duration, int delay = 0) => new(from, to,
@@ -106,40 +125,48 @@ public partial class NotificationWindow : Window
     private static DoubleAnimation EaseTo(double value) => new()
     {
         To = value,
-        Duration = TimeSpan.FromMilliseconds(200),
+        Duration = TimeSpan.FromMilliseconds(140),
         EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
     };
 
-    private static void AnimateTrail(Border layer, int delay, int duration, double peak, double finalOpacity,
-        double endX, double startY, double endY)
+    private void OnDetailsEnter(object sender, System.Windows.Input.MouseEventArgs e)
     {
-        var opacity = new DoubleAnimationUsingKeyFrames { BeginTime = TimeSpan.FromMilliseconds(delay) };
-        opacity.KeyFrames.Add(new LinearDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.Zero)));
-        opacity.KeyFrames.Add(new EasingDoubleKeyFrame(peak, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(duration * 0.3)),
-            new QuadraticEase { EasingMode = EasingMode.EaseOut }));
-        opacity.KeyFrames.Add(new EasingDoubleKeyFrame(finalOpacity, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(duration)),
-            new QuadraticEase { EasingMode = EasingMode.EaseOut }));
-        layer.BeginAnimation(OpacityProperty, opacity);
-        var offset = (TranslateTransform)layer.RenderTransform;
-        offset.BeginAnimation(TranslateTransform.XProperty, Move(-8, endX, duration, delay));
-        offset.BeginAnimation(TranslateTransform.YProperty, Move(startY, endY, duration, delay));
+        if (!SystemParameters.ClientAreaAnimation) return;
+        ((TranslateTransform)((TransformGroup)DetailsArrow.RenderTransform).Children[1])
+            .BeginAnimation(TranslateTransform.XProperty, EaseTo(3));
     }
 
-    private void OnDetailsEnter(object sender, System.Windows.Input.MouseEventArgs e) =>
-        ((TranslateTransform)((TransformGroup)DetailsArrow.RenderTransform).Children[1])
-        .BeginAnimation(TranslateTransform.XProperty, EaseTo(3));
-
-    private void OnDetailsLeave(object sender, System.Windows.Input.MouseEventArgs e) =>
-        ((TranslateTransform)((TransformGroup)DetailsArrow.RenderTransform).Children[1])
-        .BeginAnimation(TranslateTransform.XProperty, EaseTo(0));
+    private void OnDetailsLeave(object sender, System.Windows.Input.MouseEventArgs e)
+    {
+        var offset = (TranslateTransform)((TransformGroup)DetailsArrow.RenderTransform).Children[1];
+        if (!SystemParameters.ClientAreaAnimation) { offset.X = 0; return; }
+        offset.BeginAnimation(TranslateTransform.XProperty, EaseTo(0));
+    }
 
     private void OnDetails(object sender, RoutedEventArgs e)
     {
+        if (_closing) return;
         _app.OpenDetails(_leftover, this);
-        var exit = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(130));
-        exit.Completed += (_, _) => Close();
-        BeginAnimation(OpacityProperty, exit);
+        CloseWithMotion(Close);
     }
 
-    private void OnIgnore(object sender, RoutedEventArgs e) => _app.Ignore(_leftover.AppName);
+    private void OnIgnore(object sender, RoutedEventArgs e)
+    {
+        if (_closing) return;
+        CloseWithMotion(() => _app.Ignore(_leftover.AppName));
+    }
+
+    private void CloseWithMotion(Action action)
+    {
+        _closing = true;
+        if (!SystemParameters.ClientAreaAnimation)
+        {
+            action();
+            return;
+        }
+        var exit = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(190));
+        exit.Completed += (_, _) => action();
+        ToastCard.BeginAnimation(OpacityProperty, exit);
+        ToastSlide.BeginAnimation(TranslateTransform.YProperty, Move(0, 4, 190));
+    }
 }

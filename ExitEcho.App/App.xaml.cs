@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using ExitEcho.App.Localization;
 using ExitEcho.Core;
 using Microsoft.Win32;
@@ -23,6 +24,8 @@ public partial class App : System.Windows.Application
     private readonly ObservableCollection<IgnoredRule> _ignoredItems = [];
     private string? _ignoredLoadError;
     private readonly List<NotificationWindow> _notifications = [];
+    private readonly List<LeftoverEvent> _pendingNotifications = [];
+    private string? _notificationScreenName;
     private readonly HistoryStore _history = new();
     private readonly ConditionalWeakTable<LeftoverEvent, StrongBox<Guid>> _historyIds = new();
     private readonly AppSettings _settings = SettingsStore.Load();
@@ -255,6 +258,8 @@ public partial class App : System.Windows.Application
     internal void SetNotifications(bool enabled)
     {
         _settings.ShowNotifications = enabled;
+        if (!enabled)
+            _pendingNotifications.Clear();
         SaveSettings();
     }
 
@@ -314,6 +319,7 @@ public partial class App : System.Windows.Application
         foreach (var window in _notifications.Where(window =>
                      string.Equals(window.AppName, name, StringComparison.OrdinalIgnoreCase)).ToArray())
             window.Close();
+        _pendingNotifications.RemoveAll(item => string.Equals(item.AppName, name, StringComparison.OrdinalIgnoreCase));
     }
 
     internal void IgnoreProcess(LeftoverEvent leftover, LeftoverProcess process)
@@ -372,7 +378,10 @@ public partial class App : System.Windows.Application
     internal void NotificationClosed(NotificationWindow window)
     {
         _notifications.Remove(window);
+        ShowPendingNotifications();
         PositionNotifications();
+        if (_notifications.Count == 0 && _pendingNotifications.Count == 0)
+            _notificationScreenName = null;
     }
 
     private void StartMonitoring()
@@ -445,39 +454,118 @@ public partial class App : System.Windows.Application
 
     private void ShowLeftover(LeftoverEvent leftover)
     {
+        var historyId = _history.Record(leftover);
         var filtered = IgnoreStore.Filter(leftover, _ignoredItems);
         if (filtered is null)
             return;
         leftover = filtered;
-        _historyIds.Add(leftover, new StrongBox<Guid>(_history.Record(leftover)));
+        _historyIds.Add(leftover, new StrongBox<Guid>(historyId));
         _eventCount++;
         _main?.UpdateStatus();
         if (_ignored.Contains(leftover.AppName) || !_settings.ShowNotifications)
             return;
 
-        var window = new NotificationWindow(this, leftover);
-        _notifications.Add(window);
-        window.SourceInitialized += (_, _) => PositionNotifications();
-        window.Show();
+        var key = NotificationKey(leftover);
+        var existing = _notifications.FirstOrDefault(window => !window.IsClosing &&
+            string.Equals(window.IdentityKey, key, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+        {
+            existing.UpdateLeftover(leftover);
+            return;
+        }
+        var pendingIndex = _pendingNotifications.FindIndex(item =>
+            string.Equals(NotificationKey(item), key, StringComparison.OrdinalIgnoreCase));
+        if (pendingIndex >= 0)
+        {
+            _pendingNotifications[pendingIndex] = leftover;
+            return;
+        }
+        _pendingNotifications.Add(leftover);
+        ShowPendingNotifications();
+    }
+
+    internal static string NotificationKey(LeftoverEvent leftover) =>
+        string.IsNullOrWhiteSpace(leftover.ExecutablePath)
+            ? "name:" + leftover.AppName.Trim()
+            : "path:" + leftover.ExecutablePath.Trim().Replace('/', '\\');
+
+    private void ShowPendingNotifications()
+    {
+        if (_notificationScreenName is null)
+            _notificationScreenName = Forms.Screen.FromPoint(Forms.Control.MousePosition).DeviceName;
+        while (_pendingNotifications.Count > 0 && _notifications.Count < NotificationCapacity())
+        {
+            var next = _pendingNotifications[0];
+            _pendingNotifications.RemoveAt(0);
+            if (!_settings.ShowNotifications || _ignored.Contains(next.AppName))
+                continue;
+            var filtered = IgnoreStore.Filter(next, _ignoredItems);
+            if (filtered is null)
+                continue;
+            if (!ReferenceEquals(filtered, next))
+                TransferHistoryId(next, filtered);
+            var window = new NotificationWindow(this, filtered);
+            _notifications.Add(window);
+            window.SourceInitialized += (_, _) => PositionNotifications();
+            window.Show();
+        }
+    }
+
+    private Forms.Screen NotificationScreen() => Forms.Screen.AllScreens.FirstOrDefault(screen =>
+        string.Equals(screen.DeviceName, _notificationScreenName, StringComparison.OrdinalIgnoreCase))
+        ?? Forms.Screen.FromPoint(Forms.Control.MousePosition);
+
+    private int NotificationCapacity()
+    {
+        var screen = NotificationScreen();
+        var scale = _notifications.Count == 0 ? 1d :
+            PresentationSource.FromVisual(_notifications[0])?.CompositionTarget?.TransformFromDevice.M22 ?? 1d;
+        var height = _notifications.Count == 0 ? 200d : _notifications[0].Height;
+        return Math.Clamp((int)Math.Floor((screen.WorkingArea.Height * scale - 8) / (height + 8)), 0, 3);
     }
 
     private void PositionNotifications()
     {
-        var screen = Forms.Screen.FromPoint(Forms.Control.MousePosition);
+        if (_notifications.Count == 0)
+            return;
+        var screen = NotificationScreen();
         for (var index = 0; index < _notifications.Count; index++)
         {
             var window = _notifications[index];
             var transform = PresentationSource.FromVisual(window)?.CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
+            var topLeft = transform.Transform(new System.Windows.Point(screen.WorkingArea.Left, screen.WorkingArea.Top));
             var bottomRight = transform.Transform(new System.Windows.Point(screen.WorkingArea.Right, screen.WorkingArea.Bottom));
-            window.Left = bottomRight.X - window.Width - 16;
-            window.Top = bottomRight.Y - (index + 1) * (window.Height + 8) - 8;
+            var left = Math.Clamp(bottomRight.X - window.Width - 16, topLeft.X,
+                Math.Max(topLeft.X, bottomRight.X - window.Width));
+            var top = Math.Clamp(bottomRight.Y - (index + 1) * (window.Height + 8), topLeft.Y,
+                Math.Max(topLeft.Y, bottomRight.Y - window.Height));
+            if (!SystemParameters.ClientAreaAnimation || !window.IsLoaded)
+            {
+                window.Left = left;
+                window.Top = top;
+                continue;
+            }
+            AnimatePosition(window, Window.LeftProperty, left);
+            AnimatePosition(window, Window.TopProperty, top);
         }
+    }
+
+    private static void AnimatePosition(Window window, DependencyProperty property, double target)
+    {
+        var current = (double)window.GetValue(property);
+        if (double.IsNaN(current) || Math.Abs(current - target) < 0.5)
+            return;
+        window.BeginAnimation(property, null);
+        window.SetValue(property, target);
+        window.BeginAnimation(property, new DoubleAnimation(current, target, TimeSpan.FromMilliseconds(210))
+        { FillBehavior = FillBehavior.Stop, EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
     }
 
     private void ExitApplication()
     {
         _exiting = true;
         _monitorCancellation?.Cancel();
+        _pendingNotifications.Clear();
         foreach (var window in _notifications.ToArray())
             window.Close();
         _main?.Close();

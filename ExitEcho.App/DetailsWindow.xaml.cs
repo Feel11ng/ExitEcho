@@ -14,6 +14,7 @@ public partial class DetailsWindow : Window
     private readonly LeftoverEvent _leftover;
     private IReadOnlyList<LeftoverProcess> _visibleProcesses;
     private int _animatedCards;
+    private bool _removingProcess;
     internal event Action<int>? LeftoversEnded;
 
     public DetailsWindow(LeftoverEvent leftover, Window? origin = null)
@@ -68,11 +69,52 @@ public partial class DetailsWindow : Window
     private void OnIgnoreProcess(object sender, RoutedEventArgs e)
     {
         if (sender is System.Windows.Controls.Button { Tag: LeftoverProcess process })
-            ((App)System.Windows.Application.Current).IgnoreProcess(_leftover, process);
+        {
+            if (_removingProcess) return;
+            if (!SystemParameters.ClientAreaAnimation)
+            {
+                ((App)System.Windows.Application.Current).IgnoreProcess(_leftover, process);
+                return;
+            }
+            var card = FindCard((DependencyObject)sender);
+            if (card is null)
+            {
+                ((App)System.Windows.Application.Current).IgnoreProcess(_leftover, process);
+                return;
+            }
+            _removingProcess = true;
+            var height = card.ActualHeight;
+            card.MinHeight = 0;
+            card.Height = height;
+            var fade = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(180));
+            fade.Completed += (_, _) =>
+            {
+                ((App)System.Windows.Application.Current).IgnoreProcess(_leftover, process);
+                _removingProcess = false;
+            };
+            card.BeginAnimation(OpacityProperty, fade);
+            if (card.RenderTransform is TranslateTransform offset)
+                offset.BeginAnimation(TranslateTransform.YProperty,
+                    new DoubleAnimation(0, -3, TimeSpan.FromMilliseconds(180)));
+            card.BeginAnimation(HeightProperty, new DoubleAnimation(height, 0, TimeSpan.FromMilliseconds(180)));
+        }
+    }
+
+    private static Border? FindCard(DependencyObject child)
+    {
+        for (var current = VisualTreeHelper.GetParent(child); current is not null; current = VisualTreeHelper.GetParent(current))
+            if (current is Border { Name: "ProcessCard" } card) return card;
+        return null;
     }
 
     private void AnimateOpen()
     {
+            if (!SystemParameters.ClientAreaAnimation)
+            {
+                BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(120)));
+                HeaderOverline.Opacity = AppTitle.Opacity = SummaryGrid.Opacity = EchoMark.Opacity = 1;
+                return;
+            }
             var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
             BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(240))
             { EasingFunction = ease });
@@ -126,13 +168,19 @@ public partial class DetailsWindow : Window
     private void OnProcessCardLoaded(object sender, RoutedEventArgs e)
     {
         var card = (Border)sender;
-        card.RenderTransform = new TranslateTransform(0, 5);
-        var delay = TimeSpan.FromMilliseconds(170 + _animatedCards++ * 75);
+        if (!SystemParameters.ClientAreaAnimation)
+        {
+            card.Opacity = 1;
+            card.RenderTransform = new TranslateTransform();
+            return;
+        }
+        card.RenderTransform = new TranslateTransform(0, 4);
+        var delay = TimeSpan.FromMilliseconds(40 + _animatedCards++ * 40);
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        card.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(250))
+        card.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(210))
         { BeginTime = delay, EasingFunction = ease });
         ((TranslateTransform)card.RenderTransform).BeginAnimation(TranslateTransform.YProperty,
-            new DoubleAnimation(5, 0, TimeSpan.FromMilliseconds(250)) { BeginTime = delay, EasingFunction = ease });
+            new DoubleAnimation(4, 0, TimeSpan.FromMilliseconds(210)) { BeginTime = delay, EasingFunction = ease });
     }
 
     private void OnClose(object sender, RoutedEventArgs e) => Close();
