@@ -50,7 +50,7 @@
   "ProcessFew": "{0} processes",
   "ProcessMany": "{0} processes",
   "EndedBy": "Ended by ExitEcho",
-  "LeftRunning": "Left running",
+  "LeftRunning": "Still running",
   "StepperDetected": "Detected",
   "StepperIgnored": "Ignored",
   "TrayOpen": "Open",
