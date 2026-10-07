@@ -53,6 +53,8 @@
   "ProcessMany": "{0} процессов",
   "EndedBy": "Завершено через ExitEcho",
   "LeftRunning": "Оставлено работать",
+  "StepperDetected": "Обнаружено",
+  "StepperIgnored": "Игнорировано",
   "TrayOpen": "Открыть",
   "TraySettings": "Настройки",
   "TrayExit": "Выход",

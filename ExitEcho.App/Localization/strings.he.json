@@ -53,6 +53,8 @@
   "ProcessMany": "{0} תהליכים",
   "EndedBy": "הסתיים באמצעות ExitEcho",
   "LeftRunning": "עדיין פועל",
+  "StepperDetected": "זוהה",
+  "StepperIgnored": "התעלמו",
   "TrayOpen": "פתיחה",
   "TraySettings": "הגדרות",
   "TrayExit": "יציאה",

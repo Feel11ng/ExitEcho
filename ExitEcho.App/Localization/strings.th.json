@@ -53,6 +53,8 @@
   "ProcessMany": "{0} กระบวนการ 5 ตัวขึ้นไป",
   "EndedBy": "สิ้นสุดโดย ExitEcho",
   "LeftRunning": "ยังทำงานอยู่",
+  "StepperDetected": "ตรวจพบ",
+  "StepperIgnored": "เพิกเฉยแล้ว",
   "TrayOpen": "เปิด",
   "TraySettings": "ตั้งค่า",
   "TrayExit": "ออกจากระบบ",

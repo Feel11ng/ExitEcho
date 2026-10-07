@@ -53,6 +53,8 @@
   "ProcessMany": "{0} processen",
   "EndedBy": "Beëindigd door ExitEcho",
   "LeftRunning": "Draait nog",
+  "StepperDetected": "Gedetecteerd",
+  "StepperIgnored": "Genegeerd",
   "TrayOpen": "Openen",
   "TraySettings": "Instellingen",
   "TrayExit": "Afsluiten",

@@ -53,6 +53,8 @@
   "ProcessMany": "{0} 個進程",
   "EndedBy": "由 ExitEcho 結束",
   "LeftRunning": "仍在執行",
+  "StepperDetected": "已偵測",
+  "StepperIgnored": "已忽略",
   "TrayOpen": "開啟",
   "TraySettings": "設定",
   "TrayExit": "退出",

@@ -78,7 +78,7 @@
     <Grid x:Name="DetailsBody" Grid.Row="1" Margin="21,15,21,20">
       <Grid.RowDefinitions>
         <RowDefinition Height="20"/><RowDefinition Height="35"/><RowDefinition Height="37"/>
-        <RowDefinition Height="10"/><RowDefinition Height="*"/><RowDefinition Height="12"/>
+        <RowDefinition Height="26"/><RowDefinition Height="*"/><RowDefinition Height="12"/>
         <RowDefinition Height="33"/>
       </Grid.RowDefinitions>
       <TextBlock x:Name="HeaderOverline" Text="{DynamicResource L_DetailsOverline}" Foreground="{DynamicResource MutedBrush}" FontSize="10.5" Opacity="0"
@@ -118,6 +118,7 @@
           </Border>
         </Canvas>
       </Grid>
+      <local:StatusStepper x:Name="EventStepper" Grid.Row="3" Margin="0,4,0,4"/>
       <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <ItemsControl x:Name="ProcessesList">
           <ItemsControl.ItemTemplate>

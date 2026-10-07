@@ -53,6 +53,8 @@
   "ProcessMany": "{0} 个进程",
   "EndedBy": "由 ExitEcho 结束",
   "LeftRunning": "仍在运行",
+  "StepperDetected": "已检测",
+  "StepperIgnored": "已忽略",
   "TrayOpen": "打开",
   "TraySettings": "设置",
   "TrayExit": "退出",

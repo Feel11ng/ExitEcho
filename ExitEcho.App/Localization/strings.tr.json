@@ -53,6 +53,8 @@
   "ProcessMany": "{0} işlem",
   "EndedBy": "ExitEcho tarafından sonlandırıldı",
   "LeftRunning": "Çalışmaya devam ediyor",
+  "StepperDetected": "Algılandı",
+  "StepperIgnored": "Yok sayıldı",
   "TrayOpen": "Aç",
   "TraySettings": "Ayarlar",
   "TrayExit": "Çıkış",

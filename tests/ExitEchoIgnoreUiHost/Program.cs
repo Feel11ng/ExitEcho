@@ -74,6 +74,10 @@ internal static class Program
                 }
                 var list = (ItemsControl)details.FindName("ProcessesList")!;
                 Check(list.Items.Count == 2, "initial process cards");
+                Check(((StatusStepper)details.FindName("EventStepper")!).Status == LeftoverStatus.Detected,
+                    "Details begins at detected status");
+                Directory.CreateDirectory(Path.Combine("artifacts", "ui"));
+                Capture(details, Path.Combine("artifacts", "ui", "stepper-details-dark.png"));
                 Click(FindChildren<Button>(details).First(button => button.Tag is LeftoverProcess p && p.Pid == ignoredChild.Id));
                 await Task.Delay(500);
                 Check(list.Items.Count == 1, "Details updates immediately after Ignore process");
@@ -91,7 +95,7 @@ internal static class Program
                 Check(new IgnoredRule("Fallback app", null, ignoredChild.ProcessName).ToString()
                     .Contains("name only", StringComparison.Ordinal), "name-only scope is visible in rule label");
                 typeof(App).GetMethod("Ignore", BindingFlags.Instance | BindingFlags.NonPublic)!
-                    .Invoke(app, ["Another app"]);
+                    .Invoke(app, ["Another app", null]);
                 typeof(MainWindow).GetMethod("ShowIgnoredApps", BindingFlags.Instance | BindingFlags.NonPublic)!
                     .Invoke(main, null);
                 await Task.Delay(300);
@@ -142,6 +146,13 @@ internal static class Program
                 visibleChild.WaitForExit(3000);
                 Check(visibleChild.HasExited && !ignoredChild.HasExited,
                     "End leftovers terminates only visible process after confirmation");
+                Check(((StatusStepper)details.FindName("EventStepper")!).Status == LeftoverStatus.Ended,
+                    "Details shows ended status after a real process ends");
+                Check(FindChildren<TextBlock>((StatusStepper)details.FindName("EventStepper")!)
+                    .Any(label => label.Text == "Ended by ExitEcho"),
+                    "Details stepper renders ended label");
+                await Task.Delay(90);
+                Capture(details, Path.Combine(output, "stepper-details.png"));
                 notification.Close();
                 typeof(App).GetMethod("SetNotifications", BindingFlags.Instance | BindingFlags.NonPublic)!
                     .Invoke(app, [true]);
@@ -211,7 +222,72 @@ internal static class Program
                 showLeftover.Invoke(app, [Probe(floodName + " fallback", null!, 1)]);
                 Check(Notifications().Count == 1, "missing path falls back to app name");
                 while (Notifications().Count > 0) Notifications()[0].Close();
-                Console.WriteLine("PASS: dark/light, reduced motion, Ignore/Details/History, burst deduplication, three-window cap, queue/reposition, History persistence, visible-only End");
+                var ignoredEvent = Probe("Stepper ignored " + Guid.NewGuid().ToString("N"),
+                    @"C:\Probe\ignored-stepper.exe", 1);
+                showLeftover.Invoke(app, [ignoredEvent]);
+                var ignoredSource = (LeftoverEvent)typeof(NotificationWindow)
+                    .GetField("_leftover", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(Notifications().Single())!;
+                typeof(App).GetMethod("Ignore", BindingFlags.Instance | BindingFlags.NonPublic)!
+                    .Invoke(app, [ignoredEvent.AppName, ignoredSource]);
+                Check(((IEnumerable)historyProperty.GetValue(app)!).Cast<object>().Any(entry =>
+                    (string)entry.GetType().GetProperty("AppName")!.GetValue(entry)! == ignoredEvent.AppName &&
+                    (bool)entry.GetType().GetProperty("Ignored")!.GetValue(entry)!),
+                    "Ignore records the actual event as ignored");
+                var allIgnored = Probe("Details ignored probe", @"C:\Probe\details-ignored.exe", 1);
+                var ignoredDetails = new DetailsWindow(allIgnored);
+                ignoredDetails.Show();
+                typeof(DetailsWindow).GetMethod("ApplyIgnoredRules", BindingFlags.Instance | BindingFlags.NonPublic)!
+                    .Invoke(ignoredDetails, [new[] { new IgnoredRule(allIgnored.AppName, allIgnored.ExecutablePath, "probe") }]);
+                Check(((StatusStepper)ignoredDetails.FindName("EventStepper")!).Status == LeftoverStatus.Ignored &&
+                      !((Button)ignoredDetails.FindName("EndLeftoversButton")!).IsEnabled,
+                    "Details shows ignored only when all processes are excluded");
+                ignoredDetails.Close();
+
+                var endedEvent = new LeftoverEvent("Stepper ended " + Guid.NewGuid().ToString("N"),
+                    [ProcessItem(ignoredChild)], @"C:\Probe\ended-stepper.exe");
+                showLeftover.Invoke(app, [endedEvent]);
+                var endedSource = (LeftoverEvent)typeof(NotificationWindow)
+                    .GetField("_leftover", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(Notifications().Single())!;
+                typeof(App).GetMethod("OpenDetails", BindingFlags.Instance | BindingFlags.NonPublic)!
+                    .Invoke(app, [endedSource, null]);
+                var endDetails = app.Windows.OfType<DetailsWindow>().Single(window => window != details);
+                QueueDialogResult<ConfirmationWindow>(true);
+                QueueDialogResult<CompletionWindow>(true);
+                Click((Button)endDetails.FindName("EndLeftoversButton")!);
+                await Task.Delay(400);
+                Check(ignoredChild.HasExited && ((StatusStepper)endDetails.FindName("EventStepper")!).Status == LeftoverStatus.Ended,
+                    "real End leftovers updates the stepper");
+                Check(((IEnumerable)historyProperty.GetValue(app)!).Cast<object>().Any(entry =>
+                    (string)entry.GetType().GetProperty("AppName")!.GetValue(entry)! == endedEvent.AppName &&
+                    (bool)entry.GetType().GetProperty("EndedViaExitEcho")!.GetValue(entry)!),
+                    "End leftovers persists the ended status");
+
+                typeof(App).GetMethod("OpenHistory", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(app, null);
+                var stepperHistory = app.Windows.OfType<HistoryWindow>().Single();
+                await Task.Delay(300);
+                stepperHistory.Height = 540;
+                await Task.Delay(120);
+                Capture(stepperHistory, Path.Combine(output, "stepper-history-light.png"));
+                setTheme.Invoke(app, ["dark"]);
+                await Task.Delay(160);
+                Capture(stepperHistory, Path.Combine(output, "stepper-history.png"));
+                stepperHistory.Close();
+
+                var legacyId = Guid.NewGuid();
+                File.WriteAllText(historyPath, JsonSerializer.Serialize(new[] {
+                    new { Id = legacyId, AppName = "Legacy stepper", DetectedAt = DateTimeOffset.Now,
+                        ProcessCount = 1, TotalRamBytes = 1_000_000L, EndedViaExitEcho = false }
+                }));
+                var storeType = typeof(App).Assembly.GetType("ExitEcho.App.HistoryStore")!;
+                var legacyStore = Activator.CreateInstance(storeType, nonPublic: true)!;
+                object FirstEntry(object store) => ((IEnumerable)storeType.GetProperty("Entries")!.GetValue(store)!).Cast<object>().Single();
+                Check(FirstEntry(legacyStore).GetType().GetProperty("ActionStatus")!.GetValue(FirstEntry(legacyStore))!.ToString() == "Detected",
+                    "old history.json defaults to detected");
+                storeType.GetMethod("MarkIgnored")!.Invoke(legacyStore, [legacyId]);
+                var reloaded = Activator.CreateInstance(storeType, nonPublic: true)!;
+                Check(FirstEntry(reloaded).GetType().GetProperty("ActionStatus")!.GetValue(FirstEntry(reloaded))!.ToString() == "Ignored",
+                    "ignored status survives restart");
+                Console.WriteLine("PASS: stepper detected/ignored/ended, legacy History and restart, dark/light, reduced motion, notification cap, queue and visible-only End");
             }
             catch (Exception exception)
             {

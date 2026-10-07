@@ -53,6 +53,8 @@
   "ProcessMany": "{0} tiến trình",
   "EndedBy": "Kết thúc bởi ExitEcho",
   "LeftRunning": "Vẫn đang chạy",
+  "StepperDetected": "Đã phát hiện",
+  "StepperIgnored": "Đã bỏ qua",
   "TrayOpen": "Mở",
   "TraySettings": "Cài đặt",
   "TrayExit": "Thoát",

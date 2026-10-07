@@ -53,6 +53,8 @@
   "ProcessMany": "{0} プロセス",
   "EndedBy": "ExitEcho で終了済み",
   "LeftRunning": "実行中",
+  "StepperDetected": "検出済み",
+  "StepperIgnored": "無視済み",
   "TrayOpen": "開く",
   "TraySettings": "設定",
   "TrayExit": "終了",

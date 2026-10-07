@@ -53,6 +53,8 @@
   "ProcessMany": "{0} प्रक्रियाएं",
   "EndedBy": "ExitEcho द्वारा समाप्त",
   "LeftRunning": "अब भी चल रहा है",
+  "StepperDetected": "पता चला",
+  "StepperIgnored": "अनदेखा किया",
   "TrayOpen": "खोलें",
   "TraySettings": "सेटिंग्स",
   "TrayExit": "निकालें",

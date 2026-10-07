@@ -17,6 +17,9 @@ internal sealed record HistoryEntry(
     long TotalRamBytes,
     bool EndedViaExitEcho)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Ignored { get; init; }
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ExecutablePath { get; init; }
 
@@ -35,7 +38,8 @@ internal sealed record HistoryEntry(
     [JsonIgnore]
     public string RamText => Loc.Format("RamValue", Math.Ceiling(TotalRamBytes / 1_000_000d));
     [JsonIgnore]
-    public string EndStatusText => Loc.Get(EndedViaExitEcho ? "EndedBy" : "LeftRunning");
+    public LeftoverStatus ActionStatus => EndedViaExitEcho ? LeftoverStatus.Ended
+        : Ignored ? LeftoverStatus.Ignored : LeftoverStatus.Detected;
 }
 
 internal sealed class HistoryStore
@@ -82,6 +86,18 @@ internal sealed class HistoryStore
             if (Entries[index].Id != id || Entries[index].EndedViaExitEcho)
                 continue;
             Entries[index] = Entries[index] with { EndedViaExitEcho = true };
+            Save();
+            return;
+        }
+    }
+
+    public void MarkIgnored(Guid id)
+    {
+        for (var index = 0; index < Entries.Count; index++)
+        {
+            if (Entries[index].Id != id || Entries[index].Ignored || Entries[index].EndedViaExitEcho)
+                continue;
+            Entries[index] = Entries[index] with { Ignored = true };
             Save();
             return;
         }

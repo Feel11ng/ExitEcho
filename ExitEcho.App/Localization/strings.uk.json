@@ -51,6 +51,8 @@
   "ProcessMany": "{0} процесів",
   "EndedBy": "Завершено ExitEcho",
   "LeftRunning": "Досі працює",
+  "StepperDetected": "Виявлено",
+  "StepperIgnored": "Проігноровано",
   "TrayOpen": "Відкрити",
   "TraySettings": "Налаштування",
   "TrayExit": "Вийти",

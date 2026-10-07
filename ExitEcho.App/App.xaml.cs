@@ -303,7 +303,7 @@ public partial class App : System.Windows.Application
         }
     }
 
-    internal void Ignore(string name)
+    internal void Ignore(string name, LeftoverEvent? source = null)
     {
         if (_ignored.Add(name))
         {
@@ -316,9 +316,17 @@ public partial class App : System.Windows.Application
                 return;
             }
         }
+        if (source is not null)
+            MarkHistoryIgnored(source);
         foreach (var window in _notifications.Where(window =>
                      string.Equals(window.AppName, name, StringComparison.OrdinalIgnoreCase)).ToArray())
+        {
+            MarkHistoryIgnored(window.CurrentLeftover);
             window.Close();
+        }
+        foreach (var pending in _pendingNotifications.Where(item =>
+                     string.Equals(item.AppName, name, StringComparison.OrdinalIgnoreCase)))
+            MarkHistoryIgnored(pending);
         _pendingNotifications.RemoveAll(item => string.Equals(item.AppName, name, StringComparison.OrdinalIgnoreCase));
     }
 
@@ -342,9 +350,21 @@ public partial class App : System.Windows.Application
             }
         }
         foreach (var notification in _notifications.ToArray())
+        {
+            if (IgnoreStore.Filter(notification.CurrentLeftover, _ignoredItems) is null)
+                MarkHistoryIgnored(notification.CurrentLeftover);
             notification.ApplyIgnoredRules(_ignoredItems);
+        }
         foreach (var details in Windows.OfType<DetailsWindow>().ToArray())
             details.ApplyIgnoredRules(_ignoredItems);
+        if (IgnoreStore.Filter(leftover, _ignoredItems) is null)
+            MarkHistoryIgnored(leftover);
+    }
+
+    private void MarkHistoryIgnored(LeftoverEvent leftover)
+    {
+        if (_historyIds.TryGetValue(leftover, out var historyId))
+            _history.MarkIgnored(historyId.Value);
     }
 
     internal void OpenDetails(LeftoverEvent leftover, Window? origin = null)
@@ -457,13 +477,20 @@ public partial class App : System.Windows.Application
         var historyId = _history.Record(leftover);
         var filtered = IgnoreStore.Filter(leftover, _ignoredItems);
         if (filtered is null)
+        {
+            _history.MarkIgnored(historyId);
             return;
+        }
         leftover = filtered;
         _historyIds.Add(leftover, new StrongBox<Guid>(historyId));
         _eventCount++;
         _main?.UpdateStatus();
         if (_ignored.Contains(leftover.AppName) || !_settings.ShowNotifications)
+        {
+            if (_ignored.Contains(leftover.AppName))
+                _history.MarkIgnored(historyId);
             return;
+        }
 
         var key = NotificationKey(leftover);
         var existing = _notifications.FirstOrDefault(window => !window.IsClosing &&
@@ -498,10 +525,17 @@ public partial class App : System.Windows.Application
             var next = _pendingNotifications[0];
             _pendingNotifications.RemoveAt(0);
             if (!_settings.ShowNotifications || _ignored.Contains(next.AppName))
+            {
+                if (_ignored.Contains(next.AppName))
+                    MarkHistoryIgnored(next);
                 continue;
+            }
             var filtered = IgnoreStore.Filter(next, _ignoredItems);
             if (filtered is null)
+            {
+                MarkHistoryIgnored(next);
                 continue;
+            }
             if (!ReferenceEquals(filtered, next))
                 TransferHistoryId(next, filtered);
             var window = new NotificationWindow(this, filtered);

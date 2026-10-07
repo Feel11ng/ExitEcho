@@ -53,6 +53,8 @@
   "ProcessMany": "{0} prosessia",
   "EndedBy": "Päätetty ExitEcho:lla",
   "LeftRunning": "Yhä käynnissä",
+  "StepperDetected": "Havaittu",
+  "StepperIgnored": "Ohitettu",
   "TrayOpen": "Avaa",
   "TraySettings": "Asetukset",
   "TrayExit": "Lopeta",

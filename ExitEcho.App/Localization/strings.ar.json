@@ -53,6 +53,8 @@
   "ProcessMany": "{0} عملية",
   "EndedBy": "أتمها ExitEcho",
   "LeftRunning": "ما زالت تعمل",
+  "StepperDetected": "تم الاكتشاف",
+  "StepperIgnored": "تم التجاهل",
   "TrayOpen": "فتح",
   "TraySettings": "الإعدادات",
   "TrayExit": "خروج",

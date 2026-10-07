@@ -62,6 +62,8 @@ public partial class DetailsWindow : Window
     {
         var filtered = IgnoreStore.Filter(_leftover, rules);
         _visibleProcesses = filtered?.Processes ?? [];
+        if (filtered is null)
+            EventStepper.Status = LeftoverStatus.Ignored;
         _animatedCards = 0;
         RefreshLocalization();
     }
@@ -185,7 +187,7 @@ public partial class DetailsWindow : Window
 
     private void OnClose(object sender, RoutedEventArgs e) => Close();
 
-    private void OnEndLeftovers(object sender, RoutedEventArgs e)
+    private async void OnEndLeftovers(object sender, RoutedEventArgs e)
     {
         var processes = _visibleProcesses.ToArray();
         if (processes.Length == 0)
@@ -215,6 +217,14 @@ public partial class DetailsWindow : Window
         }
 
         LeftoversEnded?.Invoke(ended);
+
+        if (ended > 0)
+        {
+            EventStepper.Status = LeftoverStatus.Ended;
+            EndLeftoversButton.IsEnabled = false;
+            if (SystemParameters.ClientAreaAnimation)
+                await Task.Delay(230);
+        }
 
         var result = new CompletionWindow(ended, processes.Length) { Owner = this };
         result.ShowDialog();

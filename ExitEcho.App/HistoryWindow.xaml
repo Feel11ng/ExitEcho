@@ -64,20 +64,13 @@
                       <TextBlock Text="  ·  " Foreground="{DynamicResource MutedBrush}" FontSize="11.5"/>
                       <TextBlock Text="{Binding RamText}" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}" FontSize="11.5"/>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                      <Path x:Name="StatusIcon" Data="{StaticResource IconLeftovers}" Stroke="{DynamicResource AccentBrush}"
-                            Width="12" Height="12" Stretch="Uniform" Margin="0,0,6,0"/>
-                      <TextBlock Text="{Binding EndStatusText}" Foreground="{DynamicResource MutedBrush}" FontSize="11"/>
-                    </StackPanel>
+                    <local:StatusStepper Status="{Binding ActionStatus}" Margin="0,7,0,0"/>
                   </StackPanel>
                 </Grid>
               </Border>
             <DataTemplate.Triggers>
               <DataTrigger Binding="{Binding IconSource}" Value="{x:Null}">
                 <Setter TargetName="AppIconFallback" Property="Visibility" Value="Visible"/>
-              </DataTrigger>
-              <DataTrigger Binding="{Binding EndedViaExitEcho}" Value="True">
-                <Setter TargetName="StatusIcon" Property="Data" Value="{StaticResource IconHistoryEnded}"/>
               </DataTrigger>
               <Trigger Property="IsMouseOver" Value="True">
                 <Setter TargetName="EventCard" Property="Background" Value="{DynamicResource CardHoverBrush}"/>

@@ -53,6 +53,8 @@
   "ProcessMany": "{0}개 프로세스",
   "EndedBy": "ExitEcho 로 종료됨",
   "LeftRunning": "계속 실행 중",
+  "StepperDetected": "감지됨",
+  "StepperIgnored": "무시됨",
   "TrayOpen": "열기",
   "TraySettings": "설정",
   "TrayExit": "종료",

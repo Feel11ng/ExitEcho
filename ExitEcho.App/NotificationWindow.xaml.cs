@@ -18,6 +18,7 @@ public partial class NotificationWindow : Window
     private LeftoverEvent _leftover;
     private bool _closing;
     internal string AppName => _leftover.AppName;
+    internal LeftoverEvent CurrentLeftover => _leftover;
     internal string IdentityKey => App.NotificationKey(_leftover);
     internal bool IsClosing => _closing;
 
@@ -153,7 +154,7 @@ public partial class NotificationWindow : Window
     private void OnIgnore(object sender, RoutedEventArgs e)
     {
         if (_closing) return;
-        CloseWithMotion(() => _app.Ignore(_leftover.AppName));
+        CloseWithMotion(() => _app.Ignore(_leftover.AppName, _leftover));
     }
 
     private void CloseWithMotion(Action action)

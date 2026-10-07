@@ -53,6 +53,8 @@
   "ProcessMany": "{0} prosesser",
   "EndedBy": "Avsluttet av ExitEcho",
   "LeftRunning": "Kjører fortsatt",
+  "StepperDetected": "Oppdaget",
+  "StepperIgnored": "Ignorert",
   "TrayOpen": "Åpne",
   "TraySettings": "Innstillinger",
   "TrayExit": "Avslutt",

@@ -49,6 +49,8 @@
   "ProcessMany": "{0} processos",
   "EndedBy": "Finalizado pelo ExitEcho",
   "LeftRunning": "Ainda em execução",
+  "StepperDetected": "Detectado",
+  "StepperIgnored": "Ignorado",
   "TrayOpen": "Abrir",
   "TraySettings": "Configurações",
   "TrayExit": "Sair",

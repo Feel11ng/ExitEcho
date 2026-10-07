@@ -53,6 +53,8 @@
   "ProcessMany": "{0} procesů",
   "EndedBy": "Dokončeno ExitEcho",
   "LeftRunning": "Stále běží",
+  "StepperDetected": "Zjištěno",
+  "StepperIgnored": "Ignorováno",
   "TrayOpen": "Otevřít",
   "TraySettings": "Nastavení",
   "TrayExit": "Ukončit",

@@ -53,6 +53,8 @@
   "ProcessMany": "{0} proses",
   "EndedBy": "Selesai oleh ExitEcho",
   "LeftRunning": "Masih berjalan",
+  "StepperDetected": "Terdeteksi",
+  "StepperIgnored": "Diabaikan",
   "TrayOpen": "Buka",
   "TraySettings": "Pengaturan",
   "TrayExit": "Keluar",
