@@ -17,7 +17,14 @@
       </Button>
       <Button x:Name="MaximizeButton" Style="{StaticResource IconButtonStyle}" Width="34" Height="30"
               shell:WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="{DynamicResource L_Maximize}" AutomationProperties.Name="{DynamicResource L_Maximize}" Click="OnMaximize">
-        <Path x:Name="MaximizeIcon" Data="{StaticResource IconMaximize}" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform"/>
+        <Grid Width="16" Height="16" IsHitTestVisible="False">
+          <Path x:Name="MaximizeIcon" Data="{StaticResource IconMaximize}" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
+            <Path.RenderTransform><ScaleTransform/></Path.RenderTransform>
+          </Path>
+          <Path x:Name="MaximizeIncomingIcon" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" Opacity="0" RenderTransformOrigin="0.5,0.5">
+            <Path.RenderTransform><ScaleTransform/></Path.RenderTransform>
+          </Path>
+        </Grid>
       </Button>
       <Button Style="{StaticResource IconButtonStyle}" Width="34" Height="30"
               shell:WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="{DynamicResource L_Close}" AutomationProperties.Name="{DynamicResource L_Close}" Click="OnClose">

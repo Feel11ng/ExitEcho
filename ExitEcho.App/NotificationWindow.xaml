@@ -7,6 +7,7 @@
         AllowsTransparency="True" Background="Transparent" ShowActivated="False">
   <Window.Resources>
     <Style x:Key="NoticeAction" TargetType="Button">
+      <Setter Property="app:MotionPreferences.EnabledForControl" Value="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}"/>
       <Setter Property="Height" Value="28"/>
       <Setter Property="Padding" Value="11,0"/>
       <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
@@ -41,21 +42,23 @@
                                    To="0" Duration="0:0:0.14"/>
                 </Storyboard></BeginStoryboard></Trigger.ExitActions>
               </Trigger>
-              <MultiDataTrigger>
-                <MultiDataTrigger.Conditions>
-                  <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
-                  <Condition Binding="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}" Value="True"/>
-                </MultiDataTrigger.Conditions>
+              <Trigger Property="IsPressed" Value="True">
                 <Setter TargetName="HoverSurface" Property="Background" Value="{DynamicResource CardHoverBrush}"/>
-                <MultiDataTrigger.EnterActions><BeginStoryboard><Storyboard>
+              </Trigger>
+              <MultiTrigger>
+                <MultiTrigger.Conditions>
+                  <Condition Property="IsPressed" Value="True"/>
+                  <Condition Property="app:MotionPreferences.EnabledForControl" Value="True"/>
+                </MultiTrigger.Conditions>
+                <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.985" Duration="0:0:0.09"/>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.985" Duration="0:0:0.09"/>
-                </Storyboard></BeginStoryboard></MultiDataTrigger.EnterActions>
-                <MultiDataTrigger.ExitActions><BeginStoryboard><Storyboard>
+                </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+                <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.12"/>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.12"/>
-                </Storyboard></BeginStoryboard></MultiDataTrigger.ExitActions>
-              </MultiDataTrigger>
+                </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+              </MultiTrigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>

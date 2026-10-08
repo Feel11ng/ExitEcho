@@ -165,9 +165,9 @@ public partial class NotificationWindow : Window
             action();
             return;
         }
-        var exit = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(190));
+        var exit = new DoubleAnimation(ToastCard.Opacity, 0, TimeSpan.FromMilliseconds(MotionTiming.StateMs));
         exit.Completed += (_, _) => action();
         ToastCard.BeginAnimation(OpacityProperty, exit);
-        ToastSlide.BeginAnimation(TranslateTransform.YProperty, Move(0, 4, 190));
+        ToastSlide.BeginAnimation(TranslateTransform.YProperty, Move(ToastSlide.Y, 4, MotionTiming.StateMs));
     }
 }

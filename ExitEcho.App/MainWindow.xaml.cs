@@ -8,9 +8,21 @@ namespace ExitEcho.App;
 
 public partial class MainWindow : Window
 {
+    private static readonly DependencyProperty StatusTextProgressProperty = DependencyProperty.Register(
+        nameof(StatusTextProgress), typeof(double), typeof(MainWindow),
+        new PropertyMetadata(0d, (owner, _) => ((MainWindow)owner).UpdateStatusTextVisuals()));
+
+    private double StatusTextProgress
+    {
+        get => (double)GetValue(StatusTextProgressProperty);
+        set => SetValue(StatusTextProgressProperty, value);
+    }
+
     private readonly App _app;
     private Storyboard? _echoMotion;
     private bool? _lastPaused;
+    private int _statusTransition;
+    private bool? _lastMaximized;
     private bool _ignoredExpanded;
     private int _lastEventCount = -1;
     private Guid? _recentEntryId;
@@ -37,60 +49,166 @@ public partial class MainWindow : Window
         UpdateRecentActivity();
         UpdateStatus();
         UpdateMainMaximizeIcon();
-        Loaded += (_, _) => EventCountText.BeginAnimation(OpacityProperty,
-            new DoubleAnimation(0.74, 1, TimeSpan.FromMilliseconds(MotionEnabled ? 400 : 120))
-            { EasingFunction = new SineEase { EasingMode = EasingMode.EaseOut } });
+        Loaded += (_, _) =>
+        {
+            EventCountText.BeginAnimation(OpacityProperty,
+                new DoubleAnimation(0.74, 1, TimeSpan.FromMilliseconds(MotionEnabled ? 400 : 120))
+                { EasingFunction = new SineEase { EasingMode = EasingMode.EaseOut } });
+            if (!_app.IsPaused && MotionEnabled)
+                StartMonitoringDotPulse();
+        };
     }
 
     internal void UpdateStatus()
     {
         var paused = _app.IsPaused;
-        MonitoringText.Text = Loc.Get(paused ? "MainPaused" : "MainMonitoring");
-        MonitoringSubtitle.Text = paused
-            ? Loc.Get("MainPauseSubtitle") : Loc.Get("MainWatchSubtitle");
-        HeaderStatusText.Text = Loc.Get(paused ? "Paused" : "Monitoring");
+        MonitoringText.Text = Loc.Get("MainMonitoring");
+        PausedText.Text = Loc.Get("MainPaused");
+        MonitoringSubtitle.Text = Loc.Get("MainWatchSubtitle");
+        PausedSubtitle.Text = Loc.Get("MainPauseSubtitle");
+        HeaderMonitoringText.Text = Loc.Get("Monitoring");
+        HeaderPausedText.Text = Loc.Get("Paused");
         var eventCount = _app.EventCount;
         EventCountText.Text = eventCount.ToString();
         SessionCountLabel.Text = Loc.Get(Loc.PluralKey("MainSessionCount", eventCount));
         if (_lastEventCount >= 0 && eventCount > _lastEventCount && IsLoaded)
             AnimateNewLeftover();
         _lastEventCount = eventCount;
-        PauseButtonText.Text = Loc.Get(paused ? "ResumeMonitoring" : "PauseMonitoring");
-        PauseButton.SetValue(System.Windows.Automation.AutomationProperties.NameProperty, PauseButtonText.Text);
-        PauseIcon.Data = (Geometry)FindResource(paused ? "IconResume" : "IconPause");
+        PauseButtonText.Text = Loc.Get("PauseMonitoring");
+        ResumeButtonText.Text = Loc.Get("ResumeMonitoring");
+        PauseButton.SetValue(System.Windows.Automation.AutomationProperties.NameProperty,
+            paused ? ResumeButtonText.Text : PauseButtonText.Text);
 
         if (_lastPaused == paused)
             return;
+        var animate = _lastPaused.HasValue && IsLoaded && MotionEnabled;
         _lastPaused = paused;
-        MonitoringDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty,
-            paused ? "MutedBrush" : "SuccessBrush");
-        MonitoringDot.BeginAnimation(OpacityProperty, null);
+        AnimateStatusLayers(paused, animate);
         if (paused)
         {
-            _echoMotion?.Stop(this);
-            EchoMid.Opacity = 0.07;
-            EchoBack.Opacity = 0.04;
-            EchoFront.BeginAnimation(OpacityProperty, new DoubleAnimation(0.64, TimeSpan.FromMilliseconds(MotionEnabled ? 240 : 120)));
-            MonitoringDot.Opacity = 1;
+            _echoMotion?.Pause(this);
+            AnimateOpacity(EchoContainer, 0.6, 220, animate);
         }
         else
         {
-            EchoFront.BeginAnimation(OpacityProperty, new DoubleAnimation(1, TimeSpan.FromMilliseconds(MotionEnabled ? 240 : 120)));
+            AnimateOpacity(EchoContainer, 1, 220, animate);
             if (MotionEnabled)
             {
-                StartEchoMotion();
-                MonitoringDot.BeginAnimation(OpacityProperty,
-                    new DoubleAnimation(1, 0.78, TimeSpan.FromMilliseconds(2200))
-                    { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever,
-                      EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut } });
-            }
-            else
-            {
-                _echoMotion?.Stop(this);
-                MonitoringDot.Opacity = 1;
+                if (_echoMotion is null) StartEchoMotion();
+                else _echoMotion.Resume(this);
             }
         }
     }
+
+    private void AnimateStatusLayers(bool paused, bool animate)
+    {
+        var version = ++_statusTransition;
+        AnimateStatusText(paused, animate);
+        AnimateOpacity(paused ? PauseButtonContent : ResumeButtonContent, 0, 130, animate);
+        AnimateOpacity(paused ? ResumeButtonContent : PauseButtonContent, 1, 130, animate, 70);
+        PauseButtonContent.IsHitTestVisible = !paused;
+        ResumeButtonContent.IsHitTestVisible = paused;
+        AnimateScale(paused ? PauseIcon : PauseIncomingIcon, 0.88, 130, animate);
+        AnimateScale(paused ? PauseIncomingIcon : PauseIcon, 1, 130, animate, 70);
+
+        // Replace the monitoring pulse from its current value before crossfading the two dots.
+        var activeOpacity = MonitoringDot.Opacity;
+        MonitoringDot.BeginAnimation(OpacityProperty, null);
+        MonitoringDot.Opacity = activeOpacity;
+        AnimateOpacity(PausedDot, paused ? 1 : 0, 200, animate);
+        if (animate && !paused)
+        {
+            var fade = new DoubleAnimation(activeOpacity, 1, TimeSpan.FromMilliseconds(200))
+            { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+            fade.Completed += (_, _) =>
+            {
+                if (version == _statusTransition && !_app.IsPaused && MotionEnabled)
+                    StartMonitoringDotPulse();
+            };
+            MonitoringDot.BeginAnimation(OpacityProperty, fade);
+        }
+        else
+        {
+            AnimateOpacity(MonitoringDot, paused ? 0 : 1, 200, animate);
+            if (!animate && !paused && IsLoaded && MotionEnabled)
+                StartMonitoringDotPulse();
+        }
+    }
+
+    private void AnimateStatusText(bool paused, bool animate)
+    {
+        var target = paused ? 1d : 0d;
+        if (!animate)
+        {
+            BeginAnimation(StatusTextProgressProperty, null);
+            StatusTextProgress = target;
+            return;
+        }
+
+        // One live progress keeps all text layers synchronized when clicks interrupt a transition.
+        BeginAnimation(StatusTextProgressProperty,
+            new DoubleAnimation(StatusTextProgress, target, TimeSpan.FromMilliseconds(MotionTiming.StateMs))
+            { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
+    }
+
+    private void UpdateStatusTextVisuals()
+    {
+        if (MonitoringText is null) return;
+        var progress = Math.Clamp(StatusTextProgress, 0, 1);
+        // The narrow crossover stays faint enough that both headings never read as full text.
+        var monitoring = 1 - SmoothStep(0.05, 0.67, progress);
+        var paused = SmoothStep(0.33, 0.95, progress);
+        HeaderMonitoringText.Opacity = MonitoringText.Opacity = MonitoringSubtitle.Opacity = monitoring;
+        HeaderPausedText.Opacity = PausedText.Opacity = PausedSubtitle.Opacity = paused;
+        ((TranslateTransform)MonitoringText.RenderTransform).Y = -3 * progress;
+        ((TranslateTransform)PausedText.RenderTransform).Y = 3 * (1 - progress);
+        ((TranslateTransform)MonitoringSubtitle.RenderTransform).Y = -2 * progress;
+        ((TranslateTransform)PausedSubtitle.RenderTransform).Y = 2 * (1 - progress);
+    }
+
+    private static double SmoothStep(double start, double end, double value)
+    {
+        var t = Math.Clamp((value - start) / (end - start), 0, 1);
+        return t * t * (3 - 2 * t);
+    }
+
+    private static void AnimateOpacity(UIElement element, double target, int milliseconds, bool animate,
+        int delayMilliseconds = 0)
+    {
+        var current = element.Opacity;
+        element.BeginAnimation(OpacityProperty, null);
+        element.Opacity = current;
+        if (!animate) { element.Opacity = target; return; }
+        if (current > 0.01 && target == 1) delayMilliseconds = 0;
+        element.BeginAnimation(OpacityProperty, new DoubleAnimation(current, target,
+            TimeSpan.FromMilliseconds(milliseconds))
+        { BeginTime = TimeSpan.FromMilliseconds(delayMilliseconds),
+          EasingFunction = target == 0
+              ? new SineEase { EasingMode = EasingMode.EaseInOut }
+              : new CubicEase { EasingMode = EasingMode.EaseOut } });
+    }
+
+    private static void AnimateScale(UIElement element, double target, int milliseconds, bool animate,
+        int delayMilliseconds = 0)
+    {
+        if (element.RenderTransform is not ScaleTransform transform) return;
+        foreach (var property in new[] { ScaleTransform.ScaleXProperty, ScaleTransform.ScaleYProperty })
+        {
+            var current = (double)transform.GetValue(property);
+            transform.BeginAnimation(property, null);
+            transform.SetValue(property, current);
+            if (!animate) { transform.SetValue(property, target); continue; }
+            transform.BeginAnimation(property, new DoubleAnimation(current, target,
+                TimeSpan.FromMilliseconds(milliseconds))
+            { BeginTime = TimeSpan.FromMilliseconds(delayMilliseconds),
+              EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
+        }
+    }
+
+    private void StartMonitoringDotPulse() => MonitoringDot.BeginAnimation(OpacityProperty,
+        new DoubleAnimation(1, 0.78, TimeSpan.FromMilliseconds(2200))
+        { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever,
+          EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut } });
 
     private void OnLanguageChanged()
     {
@@ -102,7 +220,7 @@ public partial class MainWindow : Window
     private void OnSystemParametersChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName != nameof(SystemParameters.ClientAreaAnimation)) return;
-        _echoMotion?.Stop(this);
+        _echoMotion?.Pause(this);
         _lastPaused = null;
         UpdateStatus();
     }
@@ -113,7 +231,7 @@ public partial class MainWindow : Window
         if (animate && IsLoaded && latest is not null && latest.Id != _recentEntryId && MotionEnabled)
         {
             var transition = ++_recentTransition;
-            var fadeOut = new DoubleAnimation(RecentActivityRow.Opacity, 0, TimeSpan.FromMilliseconds(90));
+            var fadeOut = new DoubleAnimation(RecentActivityRow.Opacity, 0, TimeSpan.FromMilliseconds(MotionTiming.FeedbackMs));
             fadeOut.Completed += (_, _) =>
             {
                 if (transition != _recentTransition) return;
@@ -146,7 +264,10 @@ public partial class MainWindow : Window
     private void UpdateMainMaximizeIcon()
     {
         var maximized = WindowState == WindowState.Maximized;
-        MainMaximizeIcon.Data = (Geometry)FindResource(maximized ? "IconRestore" : "IconMaximize");
+        IconSwapAnimation.Set(MainMaximizeIcon, MainMaximizeIncomingIcon,
+            (Geometry)FindResource(maximized ? "IconRestore" : "IconMaximize"),
+            _lastMaximized.HasValue && _lastMaximized.Value != maximized, 145);
+        _lastMaximized = maximized;
         MainMaximizeButton.ToolTip = Loc.Get(maximized ? "Restore" : "Maximize");
         System.Windows.Automation.AutomationProperties.SetName(MainMaximizeButton,
             Loc.Get(maximized ? "Restore" : "Maximize"));
@@ -253,7 +374,7 @@ public partial class MainWindow : Window
         element.BeginAnimation(HeightProperty, null);
         element.Height = target;
         if (MotionEnabled && Math.Abs(from - target) > 0.5)
-            element.BeginAnimation(HeightProperty, new DoubleAnimation(from, target, TimeSpan.FromMilliseconds(220))
+            element.BeginAnimation(HeightProperty, new DoubleAnimation(from, target, TimeSpan.FromMilliseconds(MotionTiming.LayoutMs))
             { FillBehavior = FillBehavior.Stop, EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
     }
 

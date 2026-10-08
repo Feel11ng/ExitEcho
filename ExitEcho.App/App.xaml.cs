@@ -591,7 +591,7 @@ public partial class App : System.Windows.Application
             return;
         window.BeginAnimation(property, null);
         window.SetValue(property, target);
-        window.BeginAnimation(property, new DoubleAnimation(current, target, TimeSpan.FromMilliseconds(210))
+        window.BeginAnimation(property, new DoubleAnimation(current, target, TimeSpan.FromMilliseconds(MotionTiming.LayoutMs))
         { FillBehavior = FillBehavior.Stop, EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
     }
 

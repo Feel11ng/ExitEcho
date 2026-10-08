@@ -4,6 +4,32 @@ ExitEcho includes local WPF Geometry paths converted from the free Stroke Rounde
 
 The following sites informed visual and motion choices only; no component code or assets were copied: [Refero Styles](https://styles.refero.design/), [Skiper UI](https://skiper-ui.com/), [Watermelon UI](https://ui.watermelon.sh/), [Motion Primitives](https://motion-primitives.com/), [Magic UI](https://magicui.design/), and [Cult UI](https://www.cult-ui.com/).
 
+The End leftovers and Pause/Resume WPF button templates adapt the layered shadow and pressed-surface behavior of [Push Button by Petr Knoll](https://codepen.io/Petr-Knoll/pen/qEBWjRV), linked from [ViewportUI](https://viewportui.com/posts/446-skeuomorphic-button). The original public CodePen is MIT licensed; its CSS and JavaScript are not bundled with ExitEcho.
+
+## Push Button license
+
+MIT License
+
+Copyright (c) 2025 Petr Knoll
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ## Hugeicons Free license
 
 MIT License

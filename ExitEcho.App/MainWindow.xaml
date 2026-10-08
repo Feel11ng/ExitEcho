@@ -28,6 +28,7 @@
       </Setter>
     </Style>
     <Style x:Key="ConceptButton" TargetType="Button">
+      <Setter Property="app:MotionPreferences.EnabledForControl" Value="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}"/>
       <Setter Property="Cursor" Value="Hand"/><Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
       <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
       <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI"/>
@@ -50,24 +51,26 @@
               <DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.14"/>
             </Storyboard></BeginStoryboard></Trigger.ExitActions>
           </Trigger>
-          <MultiDataTrigger>
-            <MultiDataTrigger.Conditions>
-              <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
-              <Condition Binding="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}" Value="True"/>
-            </MultiDataTrigger.Conditions>
-            <MultiDataTrigger.EnterActions><BeginStoryboard><Storyboard>
+          <MultiTrigger>
+            <MultiTrigger.Conditions>
+              <Condition Property="IsPressed" Value="True"/>
+              <Condition Property="app:MotionPreferences.EnabledForControl" Value="True"/>
+            </MultiTrigger.Conditions>
+            <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
               <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.985" Duration="0:0:0.09"/>
               <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.985" Duration="0:0:0.09"/>
-            </Storyboard></BeginStoryboard></MultiDataTrigger.EnterActions>
-            <MultiDataTrigger.ExitActions><BeginStoryboard><Storyboard>
+            </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+            <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
               <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.12"/>
               <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.12"/>
-            </Storyboard></BeginStoryboard></MultiDataTrigger.ExitActions>
-          </MultiDataTrigger>
+            </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+          </MultiTrigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="HoverLayer" Property="Opacity" Value="0.7"/></Trigger>
         </ControlTemplate.Triggers>
       </ControlTemplate></Setter.Value></Setter>
     </Style>
     <Style x:Key="ConceptSectionButton" TargetType="Button">
+      <Setter Property="app:MotionPreferences.EnabledForControl" Value="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}"/>
       <Setter Property="Cursor" Value="Hand"/><Setter Property="Background" Value="Transparent"/>
       <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
         <Border x:Name="Shell" Background="{TemplateBinding Background}" CornerRadius="8" RenderTransformOrigin="0.5,0.5">
@@ -82,20 +85,21 @@
             <Trigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.14"/></Storyboard></BeginStoryboard></Trigger.EnterActions>
             <Trigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.14"/></Storyboard></BeginStoryboard></Trigger.ExitActions>
           </Trigger>
-          <MultiDataTrigger>
-            <MultiDataTrigger.Conditions>
-              <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
-              <Condition Binding="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}" Value="True"/>
-            </MultiDataTrigger.Conditions>
-            <MultiDataTrigger.EnterActions><BeginStoryboard><Storyboard>
+          <MultiTrigger>
+            <MultiTrigger.Conditions>
+              <Condition Property="IsPressed" Value="True"/>
+              <Condition Property="app:MotionPreferences.EnabledForControl" Value="True"/>
+            </MultiTrigger.Conditions>
+            <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
               <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.985" Duration="0:0:0.09"/>
               <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.985" Duration="0:0:0.09"/>
-            </Storyboard></BeginStoryboard></MultiDataTrigger.EnterActions>
-            <MultiDataTrigger.ExitActions><BeginStoryboard><Storyboard>
+            </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+            <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
               <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.12"/>
               <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.12"/>
-            </Storyboard></BeginStoryboard></MultiDataTrigger.ExitActions>
-          </MultiDataTrigger>
+            </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+          </MultiTrigger>
+          <Trigger Property="IsPressed" Value="True"><Setter TargetName="HoverLayer" Property="Opacity" Value="0.7"/></Trigger>
         </ControlTemplate.Triggers>
       </ControlTemplate></Setter.Value></Setter>
     </Style>
@@ -115,8 +119,14 @@
           <Path Data="{StaticResource IconSettings}" Stroke="{DynamicResource MutedBrush}" Width="17" Height="17" Stretch="Uniform"
                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Button>
-        <Ellipse x:Name="MonitoringDot" Width="7" Height="7" Fill="{DynamicResource SuccessBrush}" Margin="0,0,8,0"/>
-        <TextBlock x:Name="HeaderStatusText" Text="{DynamicResource L_Monitoring}" Foreground="{DynamicResource TextBrush}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <Grid Width="7" Height="7" Margin="0,0,8,0" VerticalAlignment="Center">
+          <Ellipse x:Name="MonitoringDot" Fill="{DynamicResource SuccessBrush}"/>
+          <Ellipse x:Name="PausedDot" Fill="{DynamicResource MutedBrush}" Opacity="0"/>
+        </Grid>
+        <Grid Margin="0,0,8,0" VerticalAlignment="Center">
+          <TextBlock x:Name="HeaderMonitoringText" Text="{DynamicResource L_Monitoring}" Foreground="{DynamicResource TextBrush}" FontSize="12" FontWeight="SemiBold"/>
+          <TextBlock x:Name="HeaderPausedText" Text="{DynamicResource L_Paused}" Foreground="{DynamicResource TextBrush}" FontSize="12" FontWeight="SemiBold" Opacity="0"/>
+        </Grid>
         <Button Style="{StaticResource IconButtonStyle}" Width="34" Height="30" Click="OnMainMinimize"
                 shell:WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="{DynamicResource L_Minimize}"
                 AutomationProperties.Name="{DynamicResource L_Minimize}">
@@ -125,7 +135,14 @@
         <Button x:Name="MainMaximizeButton" Style="{StaticResource IconButtonStyle}" Width="34" Height="30" Click="OnMainMaximize"
                 shell:WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="{DynamicResource L_Maximize}"
                 AutomationProperties.Name="{DynamicResource L_Maximize}">
-          <Path x:Name="MainMaximizeIcon" Data="{StaticResource IconMaximize}" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform"/>
+          <Grid Width="16" Height="16" IsHitTestVisible="False">
+            <Path x:Name="MainMaximizeIcon" Data="{StaticResource IconMaximize}" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
+              <Path.RenderTransform><ScaleTransform/></Path.RenderTransform>
+            </Path>
+            <Path x:Name="MainMaximizeIncomingIcon" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" Opacity="0" RenderTransformOrigin="0.5,0.5">
+              <Path.RenderTransform><ScaleTransform/></Path.RenderTransform>
+            </Path>
+          </Grid>
         </Button>
         <Button Style="{StaticResource IconButtonStyle}" Width="34" Height="30" Click="OnMainClose"
                 shell:WindowChrome.IsHitTestVisibleInChrome="True" ToolTip="{DynamicResource L_Close}"
@@ -135,9 +152,9 @@
       </StackPanel>
     </Grid>
 
-    <Grid x:Name="MainContent" Width="500" Height="470" HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="True">
+    <Grid x:Name="MainContent" Width="500" Height="470" HorizontalAlignment="Center" VerticalAlignment="Top" ClipToBounds="True">
     <StackPanel Margin="0,71,0,0" VerticalAlignment="Top" HorizontalAlignment="Center">
-      <Canvas Width="220" Height="108" RenderTransformOrigin="0.5,0.5">
+      <Canvas x:Name="EchoContainer" Width="220" Height="108" RenderTransformOrigin="0.5,0.5">
         <Canvas.RenderTransform><ScaleTransform ScaleX="0.72" ScaleY="0.72"/></Canvas.RenderTransform>
         <ContentControl x:Name="EchoBack" Style="{StaticResource EchoOutline}" Canvas.Left="77" Canvas.Top="-3"
                         Foreground="{DynamicResource EchoBackBrush}" Background="Transparent" Opacity="0.05">
@@ -152,11 +169,26 @@
           <ContentControl.RenderTransform><TranslateTransform x:Name="EchoFrontTranslate"/></ContentControl.RenderTransform>
         </ContentControl>
       </Canvas>
-      <TextBlock x:Name="MonitoringText" Text="{DynamicResource L_MainMonitoring}" Foreground="{DynamicResource TextBrush}"
-                 FontSize="21" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0"/>
-      <TextBlock x:Name="MonitoringSubtitle" Text="{DynamicResource L_MainWatchSubtitle}"
-                 Foreground="{DynamicResource MutedBrush}" FontSize="12.5" TextWrapping="Wrap" TextAlignment="Center"
-                 Width="350" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+      <Grid HorizontalAlignment="Center" Margin="0,4,0,0">
+        <TextBlock x:Name="MonitoringText" Text="{DynamicResource L_MainMonitoring}" Foreground="{DynamicResource TextBrush}"
+                   FontSize="21" FontWeight="SemiBold" HorizontalAlignment="Center">
+          <TextBlock.RenderTransform><TranslateTransform/></TextBlock.RenderTransform>
+        </TextBlock>
+        <TextBlock x:Name="PausedText" Text="{DynamicResource L_MainPaused}" Foreground="{DynamicResource TextBrush}"
+                   FontSize="21" FontWeight="SemiBold" HorizontalAlignment="Center" Opacity="0">
+          <TextBlock.RenderTransform><TranslateTransform/></TextBlock.RenderTransform>
+        </TextBlock>
+      </Grid>
+      <Grid Width="350" HorizontalAlignment="Center" Margin="0,8,0,0">
+        <TextBlock x:Name="MonitoringSubtitle" Text="{DynamicResource L_MainWatchSubtitle}"
+                   Foreground="{DynamicResource MutedBrush}" FontSize="12.5" TextWrapping="Wrap" TextAlignment="Center">
+          <TextBlock.RenderTransform><TranslateTransform/></TextBlock.RenderTransform>
+        </TextBlock>
+        <TextBlock x:Name="PausedSubtitle" Text="{DynamicResource L_MainPauseSubtitle}"
+                   Foreground="{DynamicResource MutedBrush}" FontSize="12.5" TextWrapping="Wrap" TextAlignment="Center" Opacity="0">
+          <TextBlock.RenderTransform><TranslateTransform/></TextBlock.RenderTransform>
+        </TextBlock>
+      </Grid>
     </StackPanel>
 
     <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,250,0,0">
@@ -224,11 +256,21 @@
     </Grid>
 
     <Button x:Name="PauseButton" MinWidth="134" Padding="12,0" Height="30" Margin="27,0,0,18" VerticalAlignment="Bottom" HorizontalAlignment="Left"
-            Style="{StaticResource ConceptButton}" Click="OnPauseResume" AutomationProperties.Name="{DynamicResource L_PauseMonitoring}">
-      <StackPanel Orientation="Horizontal">
-        <Path x:Name="PauseIcon" Data="{StaticResource IconPause}" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" Margin="0,0,8,0"/>
-        <TextBlock x:Name="PauseButtonText" Text="{DynamicResource L_PauseMonitoring}" Foreground="{DynamicResource TextBrush}" FontSize="12" FontWeight="Medium" VerticalAlignment="Center"/>
-      </StackPanel>
+            Style="{StaticResource SkeuoQuietButtonStyle}" Click="OnPauseResume" AutomationProperties.Name="{DynamicResource L_PauseMonitoring}">
+      <Grid>
+        <StackPanel x:Name="PauseButtonContent" Orientation="Horizontal">
+          <Path x:Name="PauseIcon" Data="{StaticResource IconPause}" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" RenderTransformOrigin="0.5,0.5" Margin="0,0,8,0">
+            <Path.RenderTransform><ScaleTransform/></Path.RenderTransform>
+          </Path>
+          <TextBlock x:Name="PauseButtonText" Text="{DynamicResource L_PauseMonitoring}" Foreground="{DynamicResource TextBrush}" FontSize="12" FontWeight="Medium" VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel x:Name="ResumeButtonContent" Orientation="Horizontal" Opacity="0" IsHitTestVisible="False">
+          <Path x:Name="PauseIncomingIcon" Data="{StaticResource IconResume}" Stroke="{DynamicResource TextBrush}" Width="16" Height="16" Stretch="Uniform" RenderTransformOrigin="0.5,0.5" Margin="0,0,8,0">
+            <Path.RenderTransform><ScaleTransform/></Path.RenderTransform>
+          </Path>
+          <TextBlock x:Name="ResumeButtonText" Text="{DynamicResource L_ResumeMonitoring}" Foreground="{DynamicResource TextBrush}" FontSize="12" FontWeight="Medium" VerticalAlignment="Center"/>
+        </StackPanel>
+      </Grid>
     </Button>
     </Grid>
   </Grid>

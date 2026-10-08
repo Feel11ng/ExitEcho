@@ -50,6 +50,7 @@
   </Style>
 
   <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+    <Setter Property="app:MotionPreferences.EnabledForControl" Value="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}"/>
     <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
     <Setter Property="Foreground" Value="{DynamicResource ButtonTextBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
@@ -79,22 +80,25 @@
               <Trigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity" To="0.055" Duration="0:0:0.13"/></Storyboard></BeginStoryboard></Trigger.EnterActions>
               <Trigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.13"/></Storyboard></BeginStoryboard></Trigger.ExitActions>
             </Trigger>
-            <MultiDataTrigger>
-              <MultiDataTrigger.Conditions>
-                <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
-                <Condition Binding="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}" Value="True"/>
-              </MultiDataTrigger.Conditions>
-              <MultiDataTrigger.EnterActions><BeginStoryboard><Storyboard>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsPressed" Value="True"/>
+                <Condition Property="app:MotionPreferences.EnabledForControl" Value="True"/>
+              </MultiTrigger.Conditions>
+              <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
                 <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.985" Duration="0:0:0.09"/>
                 <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.985" Duration="0:0:0.09"/>
                 <DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity" To="0.10" Duration="0:0:0.09"/>
-              </Storyboard></BeginStoryboard></MultiDataTrigger.EnterActions>
-              <MultiDataTrigger.ExitActions><BeginStoryboard><Storyboard>
+              </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+              <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
                 <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.12"/>
                 <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.12"/>
                 <DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity" To="0.055" Duration="0:0:0.10"/>
-              </Storyboard></BeginStoryboard></MultiDataTrigger.ExitActions>
-            </MultiDataTrigger>
+              </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+            </MultiTrigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="HoverLayer" Property="Opacity" Value="0.10"/>
+            </Trigger>
             <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Shell" Property="BorderBrush" Value="{DynamicResource FocusBrush}"/><Setter TargetName="Shell" Property="BorderThickness" Value="2"/></Trigger>
             <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Shell" Property="Opacity" Value="0.45"/></Trigger>
           </ControlTemplate.Triggers>
@@ -117,6 +121,156 @@
     <Setter Property="Padding" Value="6"/>
     <Setter Property="MinWidth" Value="32"/>
     <Setter Property="MinHeight" Value="32"/>
+  </Style>
+
+  <!-- Native WPF adaptation of Petr Knoll's MIT-licensed Push Button (CodePen qEBWjRV). -->
+  <Style x:Key="SkeuomorphicButtonBase" TargetType="Button">
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="app:MotionPreferences.EnabledForControl" Value="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}"/>
+    <Setter Property="Tag" Value="Primary"/>
+    <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Padding" Value="13,0"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Grid SnapsToDevicePixels="True">
+            <Border x:Name="OuterShadow" Background="{TemplateBinding Background}" CornerRadius="8" Opacity="0.68" IsHitTestVisible="False">
+              <Border.Effect><DropShadowEffect Color="#000000" BlurRadius="5" ShadowDepth="2" Direction="270" Opacity="0.38"/></Border.Effect>
+            </Border>
+            <Border x:Name="OuterRim" Background="{TemplateBinding BorderBrush}" CornerRadius="8">
+              <Border x:Name="InnerSurface" Margin="1" Background="{TemplateBinding Background}" CornerRadius="7"
+                      RenderTransformOrigin="0.5,0.5">
+                <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
+                <Grid ClipToBounds="True">
+                  <Border CornerRadius="7" Opacity="0.14" IsHitTestVisible="False">
+                    <Border.Background>
+                      <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#44FFFFFF" Offset="0"/><GradientStop Color="#00000000" Offset="0.52"/>
+                        <GradientStop Color="#33000000" Offset="1"/>
+                      </LinearGradientBrush>
+                    </Border.Background>
+                  </Border>
+                  <Border x:Name="InsetShade" CornerRadius="7" BorderBrush="#B0000000"
+                          BorderThickness="1,1.5,0,0" Opacity="0.12" IsHitTestVisible="False"/>
+                  <Border x:Name="EdgeHighlight" CornerRadius="7" BorderBrush="#B0FFFFFF"
+                          BorderThickness="1,1,0,0" Opacity="0.42" IsHitTestVisible="False"/>
+                  <Border x:Name="ContentOffset" RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform><TranslateTransform Y="0"/></Border.RenderTransform>
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                      Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"/>
+                  </Border>
+                </Grid>
+              </Border>
+            </Border>
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="Tag" Value="Quiet">
+              <Setter TargetName="OuterShadow" Property="Opacity" Value="0.38"/>
+              <Setter TargetName="InsetShade" Property="Opacity" Value="0.06"/>
+              <Setter TargetName="EdgeHighlight" Property="Opacity" Value="0.25"/>
+            </Trigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsMouseOver" Value="True"/>
+                <Condition Property="Tag" Value="Primary"/>
+              </MultiTrigger.Conditions>
+              <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetName="OuterShadow" Storyboard.TargetProperty="Opacity" To="0.82" Duration="0:0:0.13"/>
+                <DoubleAnimation Storyboard.TargetName="InsetShade" Storyboard.TargetProperty="Opacity" To="0.25" Duration="0:0:0.13"/>
+              </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+              <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetName="OuterShadow" Storyboard.TargetProperty="Opacity" To="0.68" Duration="0:0:0.13"/>
+                <DoubleAnimation Storyboard.TargetName="InsetShade" Storyboard.TargetProperty="Opacity" To="0.12" Duration="0:0:0.13"/>
+              </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+            </MultiTrigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsMouseOver" Value="True"/>
+                <Condition Property="Tag" Value="Quiet"/>
+              </MultiTrigger.Conditions>
+              <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetName="OuterShadow" Storyboard.TargetProperty="Opacity" To="0.55" Duration="0:0:0.13"/>
+                <DoubleAnimation Storyboard.TargetName="InsetShade" Storyboard.TargetProperty="Opacity" To="0.16" Duration="0:0:0.13"/>
+              </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+              <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetName="OuterShadow" Storyboard.TargetProperty="Opacity" To="0.38" Duration="0:0:0.13"/>
+                <DoubleAnimation Storyboard.TargetName="InsetShade" Storyboard.TargetProperty="Opacity" To="0.06" Duration="0:0:0.13"/>
+              </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+            </MultiTrigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsPressed" Value="True"/>
+                <Condition Property="Tag" Value="Primary"/>
+              </MultiTrigger.Conditions>
+              <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetName="OuterShadow" Storyboard.TargetProperty="Opacity" To="0.08" Duration="0:0:0.11"/>
+                <DoubleAnimation Storyboard.TargetName="InsetShade" Storyboard.TargetProperty="Opacity" To="0.58" Duration="0:0:0.11"/>
+                <DoubleAnimation Storyboard.TargetName="EdgeHighlight" Storyboard.TargetProperty="Opacity" To="0.12" Duration="0:0:0.11"/>
+              </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+              <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetName="OuterShadow" Storyboard.TargetProperty="Opacity" To="0.82" Duration="0:0:0.15"/>
+                <DoubleAnimation Storyboard.TargetName="InsetShade" Storyboard.TargetProperty="Opacity" To="0.25" Duration="0:0:0.15"/>
+                <DoubleAnimation Storyboard.TargetName="EdgeHighlight" Storyboard.TargetProperty="Opacity" To="0.42" Duration="0:0:0.15"/>
+              </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+            </MultiTrigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsPressed" Value="True"/>
+                <Condition Property="Tag" Value="Quiet"/>
+              </MultiTrigger.Conditions>
+              <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetName="OuterShadow" Storyboard.TargetProperty="Opacity" To="0.05" Duration="0:0:0.11"/>
+                <DoubleAnimation Storyboard.TargetName="InsetShade" Storyboard.TargetProperty="Opacity" To="0.35" Duration="0:0:0.11"/>
+                <DoubleAnimation Storyboard.TargetName="EdgeHighlight" Storyboard.TargetProperty="Opacity" To="0.08" Duration="0:0:0.11"/>
+              </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+              <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetName="OuterShadow" Storyboard.TargetProperty="Opacity" To="0.55" Duration="0:0:0.15"/>
+                <DoubleAnimation Storyboard.TargetName="InsetShade" Storyboard.TargetProperty="Opacity" To="0.16" Duration="0:0:0.15"/>
+                <DoubleAnimation Storyboard.TargetName="EdgeHighlight" Storyboard.TargetProperty="Opacity" To="0.25" Duration="0:0:0.15"/>
+              </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+            </MultiTrigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsPressed" Value="True"/>
+                <Condition Property="app:MotionPreferences.EnabledForControl" Value="True"/>
+              </MultiTrigger.Conditions>
+              <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetName="ContentOffset" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="1.5" Duration="0:0:0.11"/>
+                <DoubleAnimation Storyboard.TargetName="InnerSurface" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.985" Duration="0:0:0.11"/>
+                <DoubleAnimation Storyboard.TargetName="InnerSurface" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.985" Duration="0:0:0.11"/>
+              </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+              <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
+                <DoubleAnimation Storyboard.TargetName="ContentOffset" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" To="0" Duration="0:0:0.15"/>
+                <DoubleAnimation Storyboard.TargetName="InnerSurface" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.15"/>
+                <DoubleAnimation Storyboard.TargetName="InnerSurface" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.15"/>
+              </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+            </MultiTrigger>
+            <MultiTrigger>
+              <MultiTrigger.Conditions>
+                <Condition Property="IsKeyboardFocused" Value="True"/>
+                <Condition Property="Tag" Value="Primary"/>
+              </MultiTrigger.Conditions>
+              <Setter TargetName="OuterRim" Property="Background" Value="{DynamicResource FocusBrush}"/>
+            </MultiTrigger>
+            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="OuterRim" Property="Opacity" Value="0.48"/></Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  <Style x:Key="SkeuoActionButtonStyle" TargetType="Button" BasedOn="{StaticResource SkeuomorphicButtonBase}">
+    <Setter Property="Height" Value="33"/>
+    <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource ButtonTextBrush}"/>
+  </Style>
+  <Style x:Key="SkeuoQuietButtonStyle" TargetType="Button" BasedOn="{StaticResource SkeuomorphicButtonBase}">
+    <Setter Property="Tag" Value="Quiet"/>
+    <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
   </Style>
   <Style x:Key="CardStyle" TargetType="Border">
     <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>

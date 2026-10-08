@@ -22,14 +22,19 @@
       </Border>
     </Grid>
     <StackPanel x:Name="ActionVisual" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-      <Grid Width="10" Height="10" VerticalAlignment="Center">
+      <Grid Width="10" Height="10" VerticalAlignment="Center" IsHitTestVisible="False">
         <Ellipse x:Name="PendingDot" Width="7" Height="7" Stroke="{DynamicResource MutedBrush}"
                  StrokeThickness="1.2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         <Path x:Name="CompletedMark" Data="{StaticResource IconHistoryEnded}" Stroke="{DynamicResource SuccessBrush}"
-              Width="10" Height="10" Stretch="Uniform" Visibility="Collapsed"/>
+              Width="10" Height="10" Stretch="Uniform" Opacity="0" RenderTransformOrigin="0.5,0.5">
+          <Path.RenderTransform><ScaleTransform/></Path.RenderTransform>
+        </Path>
       </Grid>
-      <TextBlock x:Name="ActionLabel" FontSize="10.5" Foreground="{DynamicResource MutedBrush}"
-                 Margin="5,0,0,0" VerticalAlignment="Center"/>
+      <Grid Margin="5,0,0,0" VerticalAlignment="Center">
+        <TextBlock x:Name="PendingLabel" FontSize="10.5" Foreground="{DynamicResource MutedBrush}"/>
+        <TextBlock x:Name="EndedLabel" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" Opacity="0"/>
+        <TextBlock x:Name="IgnoredLabel" FontSize="10.5" Foreground="{DynamicResource MutedBrush}" Opacity="0"/>
+      </Grid>
     </StackPanel>
   </Grid>
 </UserControl>

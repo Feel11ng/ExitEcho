@@ -9,6 +9,7 @@
         Background="{DynamicResource BackgroundBrush}">
   <Window.Resources>
     <Style x:Key="DetailsAction" TargetType="Button">
+      <Setter Property="app:MotionPreferences.EnabledForControl" Value="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}"/>
       <Setter Property="Height" Value="33"/>
       <Setter Property="Padding" Value="13,0"/>
       <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
@@ -43,28 +44,29 @@
                                    To="0" Duration="0:0:0.14"/>
                 </Storyboard></BeginStoryboard></Trigger.ExitActions>
               </Trigger>
-              <MultiDataTrigger>
-                <MultiDataTrigger.Conditions>
-                  <Condition Binding="{Binding IsPressed, RelativeSource={RelativeSource TemplatedParent}}" Value="True"/>
-                  <Condition Binding="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}" Value="True"/>
-                </MultiDataTrigger.Conditions>
-                <MultiDataTrigger.EnterActions><BeginStoryboard><Storyboard>
+              <MultiTrigger>
+                <MultiTrigger.Conditions>
+                  <Condition Property="IsPressed" Value="True"/>
+                  <Condition Property="app:MotionPreferences.EnabledForControl" Value="True"/>
+                </MultiTrigger.Conditions>
+                <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface"
                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
                                    To="0.985" Duration="0:0:0.09"/>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface"
                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
                                    To="0.985" Duration="0:0:0.09"/>
-                </Storyboard></BeginStoryboard></MultiDataTrigger.EnterActions>
-                <MultiDataTrigger.ExitActions><BeginStoryboard><Storyboard>
+                </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+                <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface"
                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
                                    To="1" Duration="0:0:0.12"/>
                   <DoubleAnimation Storyboard.TargetName="ActionSurface"
                                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
                                    To="1" Duration="0:0:0.12"/>
-                </Storyboard></BeginStoryboard></MultiDataTrigger.ExitActions>
-              </MultiDataTrigger>
+                </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+              </MultiTrigger>
+              <Trigger Property="IsPressed" Value="True"><Setter TargetName="HoverSurface" Property="Opacity" Value="0.8"/></Trigger>
               <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="ActionSurface" Property="BorderBrush" Value="{DynamicResource FocusBrush}"/></Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
@@ -158,7 +160,7 @@
       <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
         <Button Content="{DynamicResource L_Close}" Style="{StaticResource DetailsAction}" Click="OnClose"
                 AutomationProperties.Name="{DynamicResource L_Close}" Margin="0,0,8,0"/>
-        <Button x:Name="EndLeftoversButton" Style="{StaticResource DetailsAction}" Background="{DynamicResource AccentBrush}" BorderBrush="{DynamicResource AccentBrush}"
+        <Button x:Name="EndLeftoversButton" Style="{StaticResource SkeuoActionButtonStyle}"
                 Click="OnEndLeftovers" AutomationProperties.Name="{DynamicResource L_EndLeftovers}">
           <StackPanel Orientation="Horizontal">
             <Path Data="{StaticResource IconEndProcess}" Stroke="{DynamicResource ButtonTextBrush}" Width="15" Height="15"

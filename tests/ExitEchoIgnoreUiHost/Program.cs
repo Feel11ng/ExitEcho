@@ -2,11 +2,13 @@ using System.Collections;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -50,7 +52,9 @@ internal static class Program
         ((List<NotificationWindow>)typeof(App).GetField("_notifications", BindingFlags.Instance | BindingFlags.NonPublic)!
             .GetValue(app)!).Add(notification);
         var main = new MainWindow(app);
-        setTheme.Invoke(app, ["dark"]);
+        var captureButtons = Environment.GetEnvironmentVariable("EXITECHO_CAPTURE_BUTTONS") == "1";
+        var captureLightButtons = Environment.GetEnvironmentVariable("EXITECHO_CAPTURE_LIGHT_BUTTONS") == "1";
+        setTheme.Invoke(app, [captureLightButtons ? "light" : "dark"]);
         main.Show();
         notification.Show();
         details.Show();
@@ -72,12 +76,104 @@ internal static class Program
                     Check(Math.Abs(((TranslateTransform)((TransformGroup)((Border)notification.FindName("ToastCard")!).RenderTransform).Children[1]).Y) < 0.01,
                         "reduced motion notification has no offset");
                 }
+                var swapOutput = Path.Combine("artifacts", "ui");
+                Directory.CreateDirectory(swapOutput);
+                var pauseButton = (Button)main.FindName("PauseButton")!;
+                if (captureButtons)
+                {
+                    await CaptureButtonStatesAsync(main, pauseButton, Path.Combine(swapOutput,
+                        captureLightButtons ? "skeuo-pause-light" : "skeuo-pause-dark"));
+                    await CaptureButtonStatesAsync(details, (Button)details.FindName("EndLeftoversButton")!,
+                        Path.Combine(swapOutput, captureLightButtons ? "skeuo-end-light" : "skeuo-end-dark"));
+                    Console.WriteLine("PASS: skeuomorphic button states captured in " +
+                                      (captureLightButtons ? "light" : "dark") + " theme");
+                    return;
+                }
+                var pauseIcon = (System.Windows.Shapes.Path)main.FindName("PauseIcon")!;
+                var pauseIncoming = (System.Windows.Shapes.Path)main.FindName("PauseIncomingIcon")!;
+                var pauseContent = (StackPanel)main.FindName("PauseButtonContent")!;
+                var resumeContent = (StackPanel)main.FindName("ResumeButtonContent")!;
+                var updateMainStatus = typeof(MainWindow).GetMethod("UpdateStatus", BindingFlags.Instance | BindingFlags.NonPublic)!;
+                var buttonWidth = pauseButton.ActualWidth;
+                var maximizeX = Bounds((Button)main.FindName("MainMaximizeButton")!, main).X;
+                var heading = (Grid)VisualTreeHelper.GetParent((TextBlock)main.FindName("MonitoringText")!);
+                var subtitle = (Grid)VisualTreeHelper.GetParent((TextBlock)main.FindName("MonitoringSubtitle")!);
+                var headingBounds = Bounds(heading, main);
+                var subtitleBounds = Bounds(subtitle, main);
+                var countY = Bounds((TextBlock)main.FindName("EventCountText")!, main).Y;
+                Capture(main, Path.Combine(swapOutput, "icon-swap-monitoring.png"));
+                Click(pauseButton);
+                updateMainStatus.Invoke(main, null);
+                if (!SystemParameters.ClientAreaAnimation)
+                    Check(resumeContent.Opacity == 1 && pauseContent.Opacity == 0,
+                        "reduced motion swaps Pause immediately");
+                if (SystemParameters.ClientAreaAnimation)
+                {
+                    await Task.Delay(100);
+                    Capture(main, Path.Combine(swapOutput, "icon-swap-pause-mid.png"));
+                }
+                await Task.Delay(150);
+                Check(ReferenceEquals(pauseIncoming.Data, main.FindResource("IconResume")) &&
+                      resumeContent.Opacity == 1 && pauseContent.Opacity == 0 &&
+                      Math.Abs(pauseButton.ActualWidth - buttonWidth) < 0.1 &&
+                      Math.Abs(Bounds((Button)main.FindName("MainMaximizeButton")!, main).X - maximizeX) < 0.1 &&
+                      Bounds(heading, main) == headingBounds && Bounds(subtitle, main) == subtitleBounds &&
+                      Math.Abs(Bounds((TextBlock)main.FindName("EventCountText")!, main).Y - countY) < 0.1,
+                    "Pause transition settles without button, header, title, subtitle or count shift");
+                Capture(main, Path.Combine(swapOutput, "icon-swap-paused.png"));
+                Click(pauseButton);
+                updateMainStatus.Invoke(main, null);
+                await Task.Delay(240);
+                Check(ReferenceEquals(pauseIcon.Data, main.FindResource("IconPause")) &&
+                      pauseContent.Opacity == 1 && resumeContent.Opacity == 0 &&
+                      Math.Abs(pauseButton.ActualWidth - buttonWidth) < 0.1,
+                    "Resume icon settles on Pause without button shift");
+                Capture(main, Path.Combine(swapOutput, "icon-swap-resumed.png"));
+                for (var repeat = 0; repeat < 4; repeat++)
+                {
+                    Click(pauseButton);
+                    updateMainStatus.Invoke(main, null);
+                    await Task.Delay(55);
+                }
+                await Task.Delay(240);
+                Check(pauseContent.Opacity == 1 && resumeContent.Opacity == 0 &&
+                      Math.Abs(pauseButton.ActualWidth - buttonWidth) < 0.1,
+                    "rapid repeated clicks settle without overlap or button shift");
+
+                var mainMax = (Button)main.FindName("MainMaximizeButton")!;
+                var mainMaxIcon = (System.Windows.Shapes.Path)main.FindName("MainMaximizeIcon")!;
+                var mainMaxIncoming = (System.Windows.Shapes.Path)main.FindName("MainMaximizeIncomingIcon")!;
+                Click(mainMax);
+                await Task.Delay(190);
+                Check(ReferenceEquals(mainMaxIcon.Data, main.FindResource("IconRestore")) &&
+                      mainMaxIcon.Opacity == 1 && mainMaxIncoming.Opacity == 0,
+                    "Main maximize icon settles on Restore");
+                Click(mainMax);
+                await Task.Delay(190);
+                Check(ReferenceEquals(mainMaxIcon.Data, main.FindResource("IconMaximize")) &&
+                      mainMaxIcon.Opacity == 1 && mainMaxIncoming.Opacity == 0,
+                    "Main restore icon settles on Maximize");
+                var chrome = FindChildren<ChromeTitleBar>(details).Single();
+                var chromeMax = (Button)chrome.FindName("MaximizeButton")!;
+                var chromeIcon = (System.Windows.Shapes.Path)chrome.FindName("MaximizeIcon")!;
+                var chromeIncoming = (System.Windows.Shapes.Path)chrome.FindName("MaximizeIncomingIcon")!;
+                Click(chromeMax);
+                await Task.Delay(190);
+                Check(ReferenceEquals(chromeIcon.Data, chrome.FindResource("IconRestore")) &&
+                      chromeIcon.Opacity == 1 && chromeIncoming.Opacity == 0,
+                    "Chrome maximize icon settles on Restore");
+                Click(chromeMax);
+                await Task.Delay(190);
+                Check(ReferenceEquals(chromeIcon.Data, chrome.FindResource("IconMaximize")) &&
+                      chromeIcon.Opacity == 1 && chromeIncoming.Opacity == 0,
+                    "Chrome restore icon settles on Maximize");
                 var list = (ItemsControl)details.FindName("ProcessesList")!;
                 Check(list.Items.Count == 2, "initial process cards");
                 Check(((StatusStepper)details.FindName("EventStepper")!).Status == LeftoverStatus.Detected,
                     "Details begins at detected status");
                 Directory.CreateDirectory(Path.Combine("artifacts", "ui"));
                 Capture(details, Path.Combine("artifacts", "ui", "stepper-details-dark.png"));
+                Capture(details, Path.Combine(swapOutput, "icon-swap-still-running.png"));
                 Click(FindChildren<Button>(details).First(button => button.Tag is LeftoverProcess p && p.Pid == ignoredChild.Id));
                 await Task.Delay(500);
                 Check(list.Items.Count == 1, "Details updates immediately after Ignore process");
@@ -133,6 +229,7 @@ internal static class Program
                 setTheme.Invoke(app, ["light"]);
                 await Task.Delay(280);
                 Capture(details, Path.Combine(output, "process-ignore-details-light.png"));
+                Capture(details, Path.Combine(output, "icon-swap-still-running-light.png"));
                 Capture(notification, Path.Combine(output, "process-ignore-notification-light.png"));
                 Capture(main, Path.Combine(output, "process-ignore-rules-light.png"));
 
@@ -153,6 +250,13 @@ internal static class Program
                     "Details stepper renders ended label");
                 await Task.Delay(90);
                 Capture(details, Path.Combine(output, "stepper-details.png"));
+                await Task.Delay(180);
+                var endedStepper = (StatusStepper)details.FindName("EventStepper")!;
+                var completedMark = (System.Windows.Shapes.Path)endedStepper.FindName("CompletedMark")!;
+                var pendingDot = (System.Windows.Shapes.Ellipse)endedStepper.FindName("PendingDot")!;
+                Check(completedMark.Opacity == 1 && pendingDot.Opacity == 0,
+                    "final stepper check replaces the pending circle without overlay");
+                Capture(details, Path.Combine(output, "icon-swap-ended.png"));
                 notification.Close();
                 typeof(App).GetMethod("SetNotifications", BindingFlags.Instance | BindingFlags.NonPublic)!
                     .Invoke(app, [true]);
@@ -326,6 +430,54 @@ internal static class Program
     }
 
     private static void Click(Button button) => button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent, button));
+
+    [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr handle);
+    [DllImport("user32.dll")] private static extern bool SetCursorPos(int x, int y);
+    [DllImport("user32.dll")] private static extern void mouse_event(uint flags, uint x, uint y, uint data, nuint extraInfo);
+
+    private static async Task CaptureButtonStatesAsync(Window window, Button button, string prefix)
+    {
+        Check(MotionPreferences.GetEnabledForControl(button) == SystemParameters.ClientAreaAnimation,
+            "button follows Windows animation setting");
+        if (Environment.GetEnvironmentVariable("EXITECHO_FORCE_REDUCED_BUTTONS") == "1")
+        {
+            MotionPreferences.SetEnabledForControl(button, false);
+            prefix += "-reduced";
+        }
+        window.Topmost = true;
+        window.Activate();
+        SetForegroundWindow(new WindowInteropHelper(window).Handle);
+        window.Topmost = false;
+        Keyboard.ClearFocus();
+        var outside = window.PointToScreen(new Point(window.ActualWidth - 12, window.ActualHeight - 12));
+        SetCursorPos((int)outside.X, (int)outside.Y);
+        await Task.Delay(170);
+        Capture(window, prefix + "-default.png", 2);
+        var center = button.PointToScreen(new Point(button.ActualWidth / 2, button.ActualHeight / 2));
+        SetCursorPos((int)center.X, (int)center.Y);
+        await Task.Delay(180);
+        Check(button.IsMouseOver, "button hover is reached for " + prefix);
+        Capture(window, prefix + "-hover.png", 2);
+        mouse_event(0x0002, 0, 0, 0, 0);
+        await Task.Delay(140);
+        Check(button.IsPressed, "button pressed state is reached for " + prefix);
+        var outerShadow = (Border)button.Template.FindName("OuterShadow", button)!;
+        var insetShade = (Border)button.Template.FindName("InsetShade", button)!;
+        var contentOffset = (Border)button.Template.FindName("ContentOffset", button)!;
+        Check(outerShadow.Opacity < 0.16 && insetShade.Opacity > 0.25,
+            "pressed depth is visible for " + prefix);
+        if (MotionPreferences.GetEnabledForControl(button))
+            Check(((TranslateTransform)contentOffset.RenderTransform).Y > 1,
+                "pressed content moves with Windows animations enabled for " + prefix);
+        else
+            Check(Math.Abs(((TranslateTransform)contentOffset.RenderTransform).Y) < 0.01,
+                "pressed content stays still with reduced motion for " + prefix);
+        Capture(window, prefix + "-pressed.png", 2);
+        SetCursorPos((int)outside.X, (int)outside.Y);
+        mouse_event(0x0004, 0, 0, 0, 0);
+        await Task.Delay(160);
+        Keyboard.ClearFocus();
+    }
 
     private static void QueueDialogResult<T>(bool result) where T : Window
     {

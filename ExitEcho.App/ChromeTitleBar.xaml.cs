@@ -7,6 +7,8 @@ namespace ExitEcho.App;
 
 public partial class ChromeTitleBar : System.Windows.Controls.UserControl
 {
+    private bool? _lastMaximized;
+
     public ChromeTitleBar()
     {
         InitializeComponent();
@@ -34,7 +36,10 @@ public partial class ChromeTitleBar : System.Windows.Controls.UserControl
     private void UpdateMaximizeIcon(Window window)
     {
         var restored = window.WindowState == WindowState.Maximized;
-        MaximizeIcon.Data = (Geometry)FindResource(restored ? "IconRestore" : "IconMaximize");
+        IconSwapAnimation.Set(MaximizeIcon, MaximizeIncomingIcon,
+            (Geometry)FindResource(restored ? "IconRestore" : "IconMaximize"),
+            _lastMaximized.HasValue && _lastMaximized.Value != restored, 145);
+        _lastMaximized = restored;
         MaximizeButton.ToolTip = Loc.Get(restored ? "Restore" : "Maximize");
         System.Windows.Automation.AutomationProperties.SetName(MaximizeButton, Loc.Get(restored ? "Restore" : "Maximize"));
     }
