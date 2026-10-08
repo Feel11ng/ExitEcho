@@ -12,7 +12,7 @@ ExitEcho watches Windows apps with visible windows and reports related processes
 
 ## Code signing policy
 
-ExitEcho's application to SignPath Foundation is under review. Current releases are **not signed**. See the [code signing policy](docs/CODE_SIGNING.md) for the proposed signing process, project roles, privacy policy, and release approval requirements.
+ExitEcho is preparing an application to SignPath Foundation. Current releases are **not signed**. See the [code signing policy](docs/CODE_SIGNING.md) for the proposed signing process, project roles, privacy policy, and release approval requirements.
 
 ## What it does
 

@@ -2,7 +2,7 @@
 
 ## Current status
 
-ExitEcho's application to SignPath Foundation is under review. Approval has not been granted, and **all current releases are unsigned**. This policy describes a proposed process; it does not claim that ExitEcho has received a certificate or that any published binary has a SignPath signature.
+ExitEcho is preparing an application to SignPath Foundation. Approval has not been granted, and **all current releases are unsigned**. This policy describes a proposed process; it does not claim that ExitEcho has received a certificate or that any published binary has a SignPath signature.
 
 If the project is approved, the planned attribution is:
 
