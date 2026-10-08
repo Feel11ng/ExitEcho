@@ -61,7 +61,23 @@ try
     catch (IOException) { }
     Check(File.ReadAllText(blockedParent) == "keep", "write error did not destroy data");
 
-    Console.WriteLine("PASS: legacy, roundtrip, scoped matching, empty result, read/write errors");
+    // Older settings/history JSON omits properties added in later releases.
+    var appAssembly = typeof(IgnoreStore).Assembly;
+    var settingsType = appAssembly.GetType("ExitEcho.App.AppSettings", throwOnError: true)!;
+    var settings = JsonSerializer.Deserialize("{\"Language\":\"en\",\"NotificationDelaySeconds\":8}", settingsType)!;
+    Check((string)settingsType.GetProperty("Language")!.GetValue(settings)! == "en" &&
+          (bool)settingsType.GetProperty("ShowNotifications")!.GetValue(settings)! &&
+          (string)settingsType.GetProperty("Theme")!.GetValue(settings)! == "system",
+        "legacy settings JSON defaults");
+    var historyType = appAssembly.GetType("ExitEcho.App.HistoryEntry", throwOnError: true)!;
+    var historyJson = "{\"Id\":\"7ee79a0b-9d18-420a-9ab8-74642a81b42e\",\"AppName\":\"LegacyApp\",\"DetectedAt\":\"2025-01-01T12:00:00+00:00\",\"ProcessCount\":1,\"TotalRamBytes\":1024,\"EndedViaExitEcho\":false}";
+    var history = JsonSerializer.Deserialize(historyJson, historyType)!;
+    Check((string)historyType.GetProperty("AppName")!.GetValue(history)! == "LegacyApp" &&
+          !(bool)historyType.GetProperty("Ignored")!.GetValue(history)! &&
+          historyType.GetProperty("ExecutablePath")!.GetValue(history) is null,
+        "legacy history JSON defaults");
+
+    Console.WriteLine("PASS: legacy settings/history/ignore JSON, roundtrip, scoped matching, empty result, read/write errors");
 }
 finally
 {

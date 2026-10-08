@@ -45,12 +45,16 @@ exitecho watch
 exitecho run "<path-to-exe>" [args]
 ```
 
-Build on Windows 10/11 x64 with the .NET 8 SDK:
+Build on Windows 10/11 x64 with the .NET 10 SDK:
 
 ```powershell
-dotnet build ExitEcho.sln -c Release
-dotnet publish ExitEcho.App/ExitEcho.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+dotnet restore ExitEcho.sln
+dotnet build ExitEcho.sln -c Release -p:PlatformTarget=x64
+dotnet publish ExitEcho.App/ExitEcho.App.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PlatformTarget=x64
 ```
+
+The desktop UI checks require an interactive Windows session and run locally with
+`dotnet run --project tests/ExitEchoIgnoreUiHost/ExitEchoIgnoreUiHost.csproj -c Debug`.
 
 ## Privacy
 

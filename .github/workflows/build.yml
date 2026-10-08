@@ -18,20 +18,77 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up .NET 8
+      - name: Set up .NET 10
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
           architecture: x64
 
       - name: Restore solution
         run: dotnet restore ExitEcho.sln
 
-      - name: Build solution (Release)
-        run: dotnet build ExitEcho.sln --configuration Release --no-restore
+      - name: Build solution (Release x64)
+        run: dotnet build ExitEcho.sln --configuration Release --no-restore -p:PlatformTarget=x64
 
       - name: Restore SmokeHost
         run: dotnet restore tests/ExitEchoSmokeHost/ExitEchoSmokeHost.csproj
 
       - name: Build SmokeHost (Release)
-        run: dotnet build tests/ExitEchoSmokeHost/ExitEchoSmokeHost.csproj --configuration Release --no-restore
+        run: dotnet build tests/ExitEchoSmokeHost/ExitEchoSmokeHost.csproj --configuration Release --no-restore -p:PlatformTarget=x64
+
+      - name: Restore Ignore tests
+        run: dotnet restore tests/ExitEchoIgnoreTests/ExitEchoIgnoreTests.csproj
+
+      - name: Build Ignore tests (Release)
+        run: dotnet build tests/ExitEchoIgnoreTests/ExitEchoIgnoreTests.csproj --configuration Release --no-restore -p:PlatformTarget=x64
+
+      - name: Run Ignore and legacy JSON tests
+        shell: pwsh
+        timeout-minutes: 5
+        run: |
+          & dotnet 'tests/ExitEchoIgnoreTests/bin/Release/net10.0-windows/ExitEchoIgnoreTests.dll'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Publish portable win-x64
+        run: dotnet publish ExitEcho.App/ExitEcho.App.csproj --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true -p:PlatformTarget=x64 --output "${{ runner.temp }}/ExitEcho-win-x64"
+
+      - name: Check version, architecture and portable EXE
+        shell: pwsh
+        run: |
+          $files = @(
+            'ExitEcho.App/bin/Release/net10.0-windows/ExitEcho.exe',
+            'ExitEcho.Cli/bin/Release/net10.0-windows/exitecho.exe',
+            'ExitEcho.Core/bin/Release/net10.0-windows/ExitEcho.Core.dll',
+            '${{ runner.temp }}/ExitEcho-win-x64/ExitEcho.exe'
+          )
+          foreach ($file in $files) {
+            if (-not (Test-Path -LiteralPath $file)) { throw "Missing build output: $file" }
+            $version = (Get-Item -LiteralPath $file).VersionInfo
+            if ($version.FileVersion -ne '0.3.0.0' -or $version.ProductVersion -ne '0.3.0') {
+              throw "Wrong version for $file`: file=$($version.FileVersion), product=$($version.ProductVersion)"
+            }
+          }
+          foreach ($file in @($files[0], $files[1], $files[3])) {
+            $bytes = [System.IO.File]::ReadAllBytes((Resolve-Path -LiteralPath $file))
+            $peOffset = [BitConverter]::ToInt32($bytes, 0x3c)
+            if ([BitConverter]::ToUInt16($bytes, $peOffset + 4) -ne 0x8664) {
+              throw "Not an x64 executable: $file"
+            }
+          }
+          foreach ($assemblyFile in @(
+            'ExitEcho.App/bin/Release/net10.0-windows/ExitEcho.dll',
+            'ExitEcho.Cli/bin/Release/net10.0-windows/exitecho.dll',
+            $files[2]
+          )) {
+            $assembly = [System.Reflection.AssemblyName]::GetAssemblyName((Resolve-Path -LiteralPath $assemblyFile))
+            if ($assembly.Version.ToString() -ne '0.3.0.0') {
+              throw "Wrong assembly version for $assemblyFile`: $($assembly.Version)"
+            }
+          }
+
+      - name: Run WPF desktop UI checks
+        shell: pwsh
+        timeout-minutes: 8
+        run: |
+          & dotnet run --project tests/ExitEchoIgnoreUiHost/ExitEchoIgnoreUiHost.csproj --configuration Debug -p:PlatformTarget=x64
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
