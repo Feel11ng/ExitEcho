@@ -103,6 +103,55 @@
         </ControlTemplate.Triggers>
       </ControlTemplate></Setter.Value></Setter>
     </Style>
+    <Style x:Key="RecentActivityButtonStyle" TargetType="Button">
+      <Setter Property="app:MotionPreferences.EnabledForControl" Value="{Binding Enabled, Source={x:Static app:MotionPreferences.Current}}"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+        <Border x:Name="Shell" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="0.8" CornerRadius="8" RenderTransformOrigin="0.5,0.5">
+          <Border.RenderTransform><ScaleTransform/></Border.RenderTransform>
+          <Grid>
+            <Border x:Name="HoverLayer" Background="{DynamicResource HoverBrush}" CornerRadius="8" Opacity="0"/>
+            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+          </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsMouseOver" Value="True">
+            <Trigger.EnterActions><BeginStoryboard><Storyboard>
+              <DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity"
+                               To="1" Duration="0:0:0.14">
+                <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+            </Storyboard></BeginStoryboard></Trigger.EnterActions>
+            <Trigger.ExitActions><BeginStoryboard><Storyboard>
+              <DoubleAnimation Storyboard.TargetName="HoverLayer" Storyboard.TargetProperty="Opacity"
+                               To="0" Duration="0:0:0.14">
+                <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+            </Storyboard></BeginStoryboard></Trigger.ExitActions>
+          </Trigger>
+          <MultiTrigger>
+            <MultiTrigger.Conditions>
+              <Condition Property="IsPressed" Value="True"/>
+              <Condition Property="app:MotionPreferences.EnabledForControl" Value="True"/>
+            </MultiTrigger.Conditions>
+            <MultiTrigger.EnterActions><BeginStoryboard><Storyboard>
+              <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.99" Duration="0:0:0.09"/>
+              <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.99" Duration="0:0:0.09"/>
+            </Storyboard></BeginStoryboard></MultiTrigger.EnterActions>
+            <MultiTrigger.ExitActions><BeginStoryboard><Storyboard>
+              <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.12"/>
+              <DoubleAnimation Storyboard.TargetName="Shell" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.12"/>
+            </Storyboard></BeginStoryboard></MultiTrigger.ExitActions>
+          </MultiTrigger>
+          <Trigger Property="IsKeyboardFocused" Value="True">
+            <Setter TargetName="Shell" Property="BorderBrush" Value="{DynamicResource FocusBrush}"/>
+          </Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate></Setter.Value></Setter>
+    </Style>
   </Window.Resources>
   <Grid Background="{DynamicResource MainBackgroundBrush}" ClipToBounds="True">
     <Grid Height="64" Margin="27,0,27,0" VerticalAlignment="Top">
@@ -200,28 +249,55 @@
                  TextAlignment="Center"/>
     </StackPanel>
 
-    <Button Height="49" Margin="27,307,27,0" VerticalAlignment="Top" Style="{StaticResource ConceptSectionButton}"
+    <Grid x:Name="ActivityArea" Margin="27,307,27,18" VerticalAlignment="Stretch">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*" MinHeight="10"/>
+        <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
+    <Button Grid.Row="0" Height="60" Style="{StaticResource RecentActivityButtonStyle}"
             Click="OnOpenHistory" AutomationProperties.Name="{DynamicResource L_RecentLeftovers}">
-      <Grid Margin="8,0,8,0">
+      <Grid x:Name="RecentActivityRow" Margin="11,4,11,4">
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-        <TextBlock Text="{DynamicResource L_RecentLeftovers}" Foreground="{DynamicResource MutedBrush}" FontSize="11.5"/>
-        <Path Grid.Column="1" Data="{StaticResource IconChevron}" Stroke="{DynamicResource MutedBrush}" Width="14" Height="14"
-              Stretch="Uniform" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+        <TextBlock Text="{DynamicResource L_HistoryHeading}" Foreground="{DynamicResource MutedBrush}" FontSize="10.5"/>
+        <Path Data="{StaticResource IconChevron}" Stroke="{DynamicResource MutedBrush}" Width="12" Height="12"
+              Stretch="Uniform" HorizontalAlignment="Right" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
           <Path.RenderTransform><RotateTransform Angle="-90"/></Path.RenderTransform>
         </Path>
-        <Grid x:Name="RecentActivityRow" Grid.Row="1">
-          <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-        <TextBlock x:Name="RecentAppText" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}"
-                   FontSize="12.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,3,10,0"/>
-        <TextBlock x:Name="RecentMetaText" Grid.Column="1" Foreground="{DynamicResource MutedBrush}"
-                   FontSize="11.5" MaxWidth="190" TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom" Margin="0,3,0,0"/>
-        <Grid.RenderTransform><TranslateTransform x:Name="RecentActivityTranslate"/></Grid.RenderTransform>
+        <Grid Grid.Row="1" Margin="0,3,0,0">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="32"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+          <Border Width="30" Height="30" Background="{DynamicResource SecondaryBrush}" CornerRadius="7"
+                  HorizontalAlignment="Left" VerticalAlignment="Center">
+            <Grid>
+              <Path x:Name="RecentAppFallback" Data="{StaticResource IconAppWindow}" Stroke="{DynamicResource MutedBrush}"
+                    Width="21" Height="21" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+              <Image x:Name="RecentAppIcon" Width="26" Height="26" Stretch="Uniform" Visibility="Collapsed"
+                     RenderOptions.BitmapScalingMode="HighQuality" SnapsToDevicePixels="True"/>
+            </Grid>
+          </Border>
+          <Grid Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+              <TextBlock x:Name="RecentAppText" FlowDirection="LeftToRight" Foreground="{DynamicResource TextBrush}"
+                         FontSize="12.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+              <TextBlock x:Name="RecentMetaText" Foreground="{DynamicResource MutedBrush}"
+                         FontSize="11.5" TextTrimming="CharacterEllipsis" Margin="0,2,0,0"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
+              <TextBlock x:Name="RecentTimeText" Foreground="{DynamicResource MutedBrush}" FontSize="10.5"
+                         TextAlignment="Right" HorizontalAlignment="Right"/>
+              <TextBlock x:Name="RecentStatusText" Foreground="{DynamicResource MutedBrush}" FontSize="10"
+                         TextAlignment="Right" HorizontalAlignment="Right" MaxWidth="100" TextTrimming="CharacterEllipsis" Margin="0,3,0,0"/>
+            </StackPanel>
+          </Grid>
         </Grid>
+        <Grid.RenderTransform><TranslateTransform x:Name="RecentActivityTranslate"/></Grid.RenderTransform>
       </Grid>
     </Button>
 
-    <Grid Margin="27,365,27,0" VerticalAlignment="Top">
+    <Grid Grid.Row="1" Margin="0,8,0,0" VerticalAlignment="Top">
+      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
       <Button x:Name="IgnoredToggle" Height="36" VerticalAlignment="Top" Style="{StaticResource ConceptSectionButton}"
               Click="OnIgnoredToggle" AutomationProperties.Name="{DynamicResource L_IgnoredApps}">
         <Grid Margin="8,0,8,0">
@@ -237,8 +313,11 @@
           </Path>
         </Grid>
       </Button>
-      <Grid x:Name="IgnoredContent" Margin="8,36,8,0" Height="0" Opacity="0" VerticalAlignment="Top" ClipToBounds="True">
-        <TextBlock x:Name="EmptyState" Text="{DynamicResource L_NoIgnoredApps}" Foreground="{DynamicResource MutedBrush}" FontSize="11.5" VerticalAlignment="Top"/>
+      <ScrollViewer x:Name="IgnoredContent" Grid.Row="1" Margin="8,0,8,0" Height="0" Opacity="0"
+                    VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" ClipToBounds="True">
+        <Grid x:Name="IgnoredBody">
+        <TextBlock x:Name="EmptyState" Text="{DynamicResource L_NoIgnoredApps}" Foreground="{DynamicResource MutedBrush}"
+                   FontSize="11.5" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <StackPanel x:Name="IgnoredListPanel" Visibility="Collapsed">
           <ListBox x:Name="IgnoredList" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextBrush}"
                    MaxHeight="80" ItemContainerStyle="{StaticResource ListRowStyle}" SelectionChanged="OnIgnoredSelectionChanged">
@@ -252,10 +331,11 @@
                   MinWidth="118" Padding="12,0" Height="30" Margin="0,5,0,0" HorizontalAlignment="Left" Click="OnRemoveIgnored"
                   AutomationProperties.Name="{DynamicResource L_RemoveSelected}"/>
         </StackPanel>
-      </Grid>
+        </Grid>
+      </ScrollViewer>
     </Grid>
 
-    <Button x:Name="PauseButton" MinWidth="134" Padding="12,0" Height="30" Margin="27,0,0,18" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+    <Button x:Name="PauseButton" Grid.Row="3" MinWidth="134" Padding="12,0" Height="30" HorizontalAlignment="Left"
             Style="{StaticResource SkeuoQuietButtonStyle}" Click="OnPauseResume" AutomationProperties.Name="{DynamicResource L_PauseMonitoring}">
       <Grid>
         <StackPanel x:Name="PauseButtonContent" Orientation="Horizontal">
@@ -272,6 +352,7 @@
         </StackPanel>
       </Grid>
     </Button>
+    </Grid>
     </Grid>
   </Grid>
 </Window>

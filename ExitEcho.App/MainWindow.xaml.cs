@@ -1,13 +1,16 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ExitEcho.App.Localization;
+using Forms = System.Windows.Forms;
 
 namespace ExitEcho.App;
 
 public partial class MainWindow : Window
 {
+    private const double BaseWindowHeight = 470;
     private static readonly DependencyProperty StatusTextProgressProperty = DependencyProperty.Register(
         nameof(StatusTextProgress), typeof(double), typeof(MainWindow),
         new PropertyMetadata(0d, (owner, _) => ((MainWindow)owner).UpdateStatusTextVisuals()));
@@ -257,8 +260,21 @@ public partial class MainWindow : Window
     {
         _recentEntryId = latest?.Id;
         RecentAppText.Text = latest?.AppName ?? Loc.Get("NoLeftovers");
-        RecentMetaText.Text = latest is null ? string.Empty : $"{latest.ProcessCountText} · {latest.RamText}";
+        RecentMetaText.Text = latest is null ? Loc.Get("HistoryEmptyDescription")
+            : $"{latest.ProcessCountText} · {latest.RamText}";
         RecentMetaText.ToolTip = RecentMetaText.Text;
+        RecentTimeText.Text = latest?.TimeLabel ?? string.Empty;
+        RecentStatusText.Text = latest?.ActionStatus switch
+        {
+            LeftoverStatus.Ended => Loc.Get("EndedBy"),
+            LeftoverStatus.Ignored => Loc.Get("StepperIgnored"),
+            LeftoverStatus.Detected => Loc.Get("StepperDetected"),
+            _ => string.Empty
+        };
+        RecentStatusText.ToolTip = RecentStatusText.Text;
+        RecentAppIcon.Source = latest?.IconSource;
+        RecentAppIcon.Visibility = RecentAppIcon.Source is null ? Visibility.Collapsed : Visibility.Visible;
+        RecentAppFallback.Visibility = RecentAppIcon.Source is null ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void UpdateMainMaximizeIcon()
@@ -341,18 +357,13 @@ public partial class MainWindow : Window
         IgnoredListPanel.Visibility = hasItems ? Visibility.Visible : Visibility.Collapsed;
         RemoveButton.IsEnabled = hasItems && IgnoredList.SelectedItem is not null;
         if (_ignoredExpanded)
-        {
-            AnimateIgnoredLayout(hasItems ? 120 : 22, hasItems ? 570 : 470, hasItems ? 620 : 470);
-        }
+            AnimateIgnoredLayout();
     }
 
     private void OnIgnoredToggle(object sender, RoutedEventArgs e)
     {
         _ignoredExpanded = !_ignoredExpanded;
-        var targetContentHeight = _ignoredExpanded ? (_app.IgnoredApps.Count > 0 ? 120 : 22) : 0;
-        AnimateIgnoredLayout(targetContentHeight,
-            _ignoredExpanded && _app.IgnoredApps.Count > 0 ? 570 : 470,
-            _ignoredExpanded && _app.IgnoredApps.Count > 0 ? 620 : 470);
+        AnimateIgnoredLayout();
         IgnoredContent.BeginAnimation(OpacityProperty,
             new DoubleAnimation(_ignoredExpanded ? 1 : 0, TimeSpan.FromMilliseconds(MotionEnabled ? 180 : 120)));
         IgnoredChevronRotate.BeginAnimation(System.Windows.Media.RotateTransform.AngleProperty,
@@ -361,16 +372,49 @@ public partial class MainWindow : Window
         if (!MotionEnabled) IgnoredChevronRotate.Angle = _ignoredExpanded ? 180 : 0;
     }
 
-    private void AnimateIgnoredLayout(double contentHeight, double mainHeight, double windowHeight)
+    private void AnimateIgnoredLayout()
     {
-        AnimateHeight(IgnoredContent, contentHeight);
-        AnimateHeight(MainContent, mainHeight);
-        AnimateHeight(this, windowHeight);
+        var previousHeight = IgnoredContent.ActualHeight;
+        IgnoredBody.Measure(new System.Windows.Size(Math.Max(1, IgnoredContent.ActualWidth), double.PositiveInfinity));
+        var contentHeight = _ignoredExpanded ? IgnoredBody.DesiredSize.Height : 0;
+
+        // Measure the actual localized content and the rows around it before animating.
+        IgnoredContent.BeginAnimation(HeightProperty, null);
+        IgnoredContent.Height = contentHeight;
+        ActivityArea.InvalidateMeasure();
+        ActivityArea.Measure(new System.Windows.Size(ActivityArea.ActualWidth, double.PositiveInfinity));
+        var requiredHeight = Math.Max(BaseWindowHeight, ActivityArea.DesiredSize.Height);
+        var dpi = VisualTreeHelper.GetDpi(this).DpiScaleY;
+        var workingHeight = Forms.Screen.FromHandle(new WindowInteropHelper(this).Handle).WorkingArea.Height / dpi;
+        var availableHeight = Math.Max(BaseWindowHeight, workingHeight - 16);
+        if (requiredHeight > availableHeight)
+        {
+            contentHeight = Math.Max(0, contentHeight - (requiredHeight - availableHeight));
+            requiredHeight = availableHeight;
+        }
+
+        AnimateHeight(IgnoredContent, contentHeight, previousHeight);
+        AnimateHeight(MainContent, requiredHeight);
+        if (WindowState == WindowState.Normal)
+        {
+            AnimateMinimumHeight(requiredHeight);
+            AnimateHeight(this, requiredHeight);
+        }
     }
 
-    private static void AnimateHeight(FrameworkElement element, double target)
+    private void AnimateMinimumHeight(double target)
     {
-        var from = element.ActualHeight;
+        var from = MinHeight;
+        BeginAnimation(MinHeightProperty, null);
+        MinHeight = target;
+        if (MotionEnabled && Math.Abs(from - target) > 0.5)
+            BeginAnimation(MinHeightProperty, new DoubleAnimation(from, target, TimeSpan.FromMilliseconds(MotionTiming.LayoutMs))
+            { FillBehavior = FillBehavior.Stop, EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
+    }
+
+    private static void AnimateHeight(FrameworkElement element, double target, double? current = null)
+    {
+        var from = current ?? element.ActualHeight;
         element.BeginAnimation(HeightProperty, null);
         element.Height = target;
         if (MotionEnabled && Math.Abs(from - target) > 0.5)

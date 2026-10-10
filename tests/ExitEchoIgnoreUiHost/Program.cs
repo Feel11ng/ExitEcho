@@ -195,7 +195,12 @@ internal static class Program
                 typeof(MainWindow).GetMethod("ShowIgnoredApps", BindingFlags.Instance | BindingFlags.NonPublic)!
                     .Invoke(main, null);
                 await Task.Delay(300);
-                Check(Math.Abs(main.Height - 620) < 1, "ignored section expands with window layout");
+                var ignoredContent = (FrameworkElement)main.FindName("IgnoredContent")!;
+                var layoutPauseButton = (Button)main.FindName("PauseButton")!;
+                Check(main.Height > 470 &&
+                      Bounds(ignoredContent, main).Bottom + 8 <= Bounds(layoutPauseButton, main).Top &&
+                      Bounds(layoutPauseButton, main).Bottom <= main.ActualHeight,
+                    "ignored section expands without overlapping Pause");
                 Click((Button)main.FindName("IgnoredToggle")!);
                 await Task.Delay(260);
                 Check(Math.Abs(main.Height - 470) < 1, "ignored section collapses with window layout");
