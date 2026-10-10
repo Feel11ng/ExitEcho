@@ -21,6 +21,17 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
+        if (Environment.GetEnvironmentVariable("EXITECHO_VERIFY_THEME_LOAD") is { } expectedTheme)
+        {
+            var freshApp = new TestApp();
+            var freshSettings = typeof(App).GetProperty("Settings", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .GetValue(freshApp)!;
+            var actualTheme = (string)freshSettings.GetType().GetProperty("Theme")!.GetValue(freshSettings)!;
+            if (actualTheme != expectedTheme)
+                throw new Exception($"Restart loaded {actualTheme} instead of {expectedTheme}");
+            Console.WriteLine("PASS: fresh process restored " + actualTheme);
+            return;
+        }
         var ignoredPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "ExitEcho", "ignored.json");
         var previous = File.Exists(ignoredPath) ? File.ReadAllBytes(ignoredPath) : null;
@@ -78,6 +89,128 @@ internal static class Program
                 }
                 var swapOutput = Path.Combine("artifacts", "ui");
                 Directory.CreateDirectory(swapOutput);
+                if (Environment.GetEnvironmentVariable("EXITECHO_CAPTURE_THEMES") == "1")
+                {
+                    typeof(App).GetMethod("OpenSettings", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(app, null);
+                    typeof(App).GetMethod("OpenHistory", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(app, null);
+                    var settings = app.Windows.OfType<SettingsWindow>().Single();
+                    var themeHistory = app.Windows.OfType<HistoryWindow>().Single();
+                    var confirmation = new ConfirmationWindow("Theme probe", 2);
+                    var completion = new CompletionWindow(2, 2);
+                    confirmation.Show();
+                    completion.Show();
+                    var themeCombo = (ComboBox)settings.FindName("ThemeCombo")!;
+                    Check(themeCombo.Items.Count == 6 &&
+                          new[] { "system", "light", "dark", "oled", "graphite", "midnight" }
+                              .SequenceEqual(themeCombo.Items.Cast<ComboBoxItem>().Select(item => (string)item.Tag)),
+                        "theme selector has six options in the requested order");
+                    using var systemThemeKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                        @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                    var systemLight = systemThemeKey?.GetValue("AppsUseLightTheme") is not int light || light != 0;
+                    var themeIds = new[] { "system", "light", "dark", "oled", "graphite", "midnight" };
+                    var mainColors = new[] { systemLight ? "#ECF2F3" : "#1C2B33", "#ECF2F3", "#1C2B33",
+                        "#000000", "#191B1E", "#0C1424" };
+                    var paletteType = typeof(App).Assembly.GetType("ExitEcho.App.ThemePalettes")!;
+                    var resolvePalette = paletteType.GetMethod("Resolve", BindingFlags.Static | BindingFlags.NonPublic)!;
+                    foreach (var (windowsLight, expected) in new[] { (true, "#ECF2F3"), (false, "#1C2B33") })
+                    {
+                        var resolved = resolvePalette.Invoke(null, ["system", windowsLight])!;
+                        Check((string)resolved.GetType().GetProperty("MainBackground")!.GetValue(resolved)! == expected,
+                            "System default resolves both Windows light and dark palettes");
+                    }
+                    for (var index = 0; index < themeIds.Length; index++)
+                    {
+                        settings.Show();
+                        themeHistory.Show();
+                        confirmation.Show();
+                        completion.Show();
+                        notification.Show();
+                        themeCombo.SelectedIndex = index;
+                        await Task.Delay(260);
+                        var theme = themeIds[index];
+                        Check((string)((ComboBoxItem)themeCombo.SelectedItem).Tag == theme,
+                            theme + " selector value");
+                        using var saved = JsonDocument.Parse(File.ReadAllText(settingsPath));
+                        Check(saved.RootElement.GetProperty("Theme").GetString() == theme,
+                            theme + " persists in settings.json");
+                        var loadedSettings = typeof(App).Assembly.GetType("ExitEcho.App.SettingsStore")!
+                            .GetMethod("Load", BindingFlags.Static | BindingFlags.Public)!.Invoke(null, null)!;
+                        Check((string)loadedSettings.GetType().GetProperty("Theme")!.GetValue(loadedSettings)! == theme,
+                            theme + " restores through SettingsStore.Load");
+                        using (var freshProcess = new Process())
+                        {
+                            var runtimeDirectory = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+                            var dotnetPath = Path.GetFullPath(Path.Combine(
+                                runtimeDirectory, "..", "..", "..", "dotnet.exe"));
+                            freshProcess.StartInfo = new ProcessStartInfo(dotnetPath)
+                            { UseShellExecute = false, CreateNoWindow = true };
+                            freshProcess.StartInfo.ArgumentList.Add(Path.Combine(
+                                AppContext.BaseDirectory, "ExitEchoIgnoreUiHost.dll"));
+                            freshProcess.StartInfo.Environment["EXITECHO_VERIFY_THEME_LOAD"] = theme;
+                            freshProcess.Start();
+                            await freshProcess.WaitForExitAsync();
+                            Check(freshProcess.ExitCode == 0, theme + " restores after a fresh process launch");
+                        }
+                        var background = (SolidColorBrush)app.Resources["MainBackgroundBrush"];
+                        Check(background.Color == (Color)ColorConverter.ConvertFromString(mainColors[index])!,
+                            theme + " exact main background");
+                        Color BrushColor(string key) => ((SolidColorBrush)app.Resources[key]).Color;
+                        Check(Contrast(BrushColor("TextBrush"), BrushColor("BackgroundBrush")) >= 7 &&
+                              Contrast(BrushColor("TextBrush"), BrushColor("SurfaceBrush")) >= 7 &&
+                              Contrast(BrushColor("MutedBrush"), BrushColor("BackgroundBrush")) >= 4.5 &&
+                              Contrast(BrushColor("ButtonTextBrush"), BrushColor("AccentBrush")) >= 4.5,
+                            theme + " text and action contrast");
+                        foreach (var window in new Window[] { main, settings, details, notification,
+                                     themeHistory, confirmation, completion })
+                            Check(window.FindResource("TextBrush") is SolidColorBrush,
+                                theme + " resources available in " + window.GetType().Name);
+                        foreach (var (name, window) in new (string, Window)[]
+                                 { ("main", main), ("settings", settings), ("details", details),
+                                   ("notification", notification), ("history", themeHistory),
+                                   ("confirmation", confirmation), ("completion", completion) })
+                            Capture(window, Path.Combine(swapOutput, $"theme-{theme}-{name}.png"));
+                        settings.Hide();
+                        themeHistory.Hide();
+                        confirmation.Hide();
+                        completion.Hide();
+                        notification.Hide();
+                        var endButton = (Button)details.FindName("EndLeftoversButton")!;
+                        var buttonTheme = Environment.GetEnvironmentVariable("EXITECHO_THEME_BUTTON_ID");
+                        if (buttonTheme is null ? theme == "oled" : theme == buttonTheme)
+                        {
+                            await CaptureButtonStatesAsync(main, (Button)main.FindName("PauseButton")!,
+                                Path.Combine(swapOutput, $"theme-{theme}-pause"));
+                            await CaptureButtonStatesAsync(details, endButton,
+                                Path.Combine(swapOutput, $"theme-{theme}-end"));
+                        }
+                        endButton.IsEnabled = false;
+                        Capture(details, Path.Combine(swapOutput, $"theme-{theme}-details-disabled.png"));
+                        endButton.IsEnabled = true;
+                    }
+                    var changeLanguage = typeof(App).Assembly.GetType("ExitEcho.App.Localization.Loc")!
+                        .GetMethod("SetLanguage", BindingFlags.Static | BindingFlags.Public)!;
+                    var localizationCache = (IDictionary)typeof(App).Assembly
+                        .GetType("ExitEcho.App.Localization.Loc")!
+                        .GetField("Cache", BindingFlags.Static | BindingFlags.NonPublic)!.GetValue(null)!;
+                    localizationCache["ru"] = JsonSerializer.Deserialize<Dictionary<string, string>>(
+                        File.ReadAllText(Path.Combine(FindRepoRoot(), "ExitEcho.App", "Localization", "strings.ru.json")))!;
+                    changeLanguage.Invoke(null, ["ru"]);
+                    Check((string)((ComboBoxItem)themeCombo.Items[3]).Content == "Чёрная (OLED)" &&
+                          (string)((ComboBoxItem)themeCombo.Items[4]).Content == "Графитовая" &&
+                          (string)((ComboBoxItem)themeCombo.Items[5]).Content == "Полночь",
+                        "Russian theme labels update without restart");
+                    changeLanguage.Invoke(null, ["en"]);
+                    Check((string)((ComboBoxItem)themeCombo.Items[3]).Content == "OLED Black" &&
+                          (string)((ComboBoxItem)themeCombo.Items[4]).Content == "Graphite" &&
+                          (string)((ComboBoxItem)themeCombo.Items[5]).Content == "Midnight",
+                        "English theme labels update without restart");
+                    completion.Close();
+                    confirmation.Close();
+                    themeHistory.Close();
+                    settings.Close();
+                    Console.WriteLine("PASS: six themes, Windows system mapping, selector, persistence, exact main colors and seven WPF windows");
+                    return;
+                }
                 var pauseButton = (Button)main.FindName("PauseButton")!;
                 if (captureButtons)
                 {
@@ -423,6 +556,28 @@ internal static class Program
 
     private static LeftoverProcess ProcessItem(Process process) =>
         new(process.ProcessName, process.Id, process.StartTime.ToUniversalTime().Ticks, process.WorkingSet64);
+
+    private static double Contrast(Color first, Color second)
+    {
+        static double Channel(byte value)
+        {
+            var normalized = value / 255d;
+            return normalized <= 0.04045 ? normalized / 12.92 : Math.Pow((normalized + 0.055) / 1.055, 2.4);
+        }
+        static double Luminance(Color color) =>
+            0.2126 * Channel(color.R) + 0.7152 * Channel(color.G) + 0.0722 * Channel(color.B);
+        var a = Luminance(first);
+        var b = Luminance(second);
+        return (Math.Max(a, b) + 0.05) / (Math.Min(a, b) + 0.05);
+    }
+
+    private static string FindRepoRoot()
+    {
+        for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
+            if (File.Exists(Path.Combine(directory.FullName, "ExitEcho.sln"))) return directory.FullName;
+        throw new DirectoryNotFoundException("ExitEcho repository root was not found.");
+    }
+
 
     private static IEnumerable<T> FindChildren<T>(DependencyObject parent) where T : DependencyObject
     {

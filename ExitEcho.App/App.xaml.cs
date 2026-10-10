@@ -234,7 +234,7 @@ public partial class App : System.Windows.Application
 
     internal void SetTheme(string theme)
     {
-        _settings.Theme = theme is "dark" or "light" ? theme : "system";
+        _settings.Theme = ThemePalettes.IsSupported(theme) ? theme : "system";
         SaveSettings();
         ApplyTheme();
     }
@@ -637,35 +637,16 @@ public partial class App : System.Windows.Application
     {
         using var key = Registry.CurrentUser.OpenSubKey(
             @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
-        _lightTheme = _settings.Theme switch
-        {
-            "light" => true,
-            "dark" => false,
-            _ => key?.GetValue("AppsUseLightTheme") is not int value || value != 0
-        };
-        var colors = _lightTheme
-            ? new[] { "#F5F7F8", "#FFFFFF", "#24343C", "#60737B", "#D8E1E4", "#397579", "#FFFFFF", "#EBF1F2", "#398365" }
-            : new[] { "#151F26", "#202E36", "#F0F3F3", "#A7B8BB", "#34464E", "#84ADA7", "#14232A", "#24343C", "#78C6A2" };
-        var names = new[] { "BackgroundBrush", "SurfaceBrush", "TextBrush", "MutedBrush",
-            "BorderBrush", "AccentBrush", "ButtonTextBrush", "SecondaryBrush", "SuccessBrush" };
-        for (var index = 0; index < names.Length; index++)
-            Resources[names[index]] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colors[index])!);
-        Resources["DangerBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
-            _lightTheme ? "#B42318" : "#FF7B72")!);
-        Resources["DangerButtonTextBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
-            _lightTheme ? "#FFFFFF" : "#14232A")!);
-        Resources["FocusBrush"] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(
-            _lightTheme ? "#397579" : "#84ADA7")!);
-        var extra = _lightTheme
-            ? new[] { "#ECF2F3", "#F7FAFA", "#E5ECEE", "#829CA3", "#365B65", "#5C7C84", "#F3F7F7" }
-            : new[] { "#1C2B33", "#2A3D46", "#2B3C44", "#D3E2E5", "#8FA2AA", "#B4C5CA", "#293B44" };
-        var extraNames = new[] { "MainBackgroundBrush", "EchoFrontFillBrush", "HoverBrush", "EchoFrontBrush",
-            "EchoBackBrush", "EchoMiddleBrush", "CardHoverBrush" };
-        for (var index = 0; index < extraNames.Length; index++)
-            Resources[extraNames[index]] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(extra[index])!);
-        Resources["NotificationBackgroundBrush"] = new LinearGradientBrush(
-            (Color)ColorConverter.ConvertFromString(_lightTheme ? "#FFFFFF" : "#1E2B33")!,
-            (Color)ColorConverter.ConvertFromString(_lightTheme ? "#F5F8F9" : "#1A262E")!, 90);
+        var systemLight = key?.GetValue("AppsUseLightTheme") is not int value || value != 0;
+        _lightTheme = _settings.Theme == "light" || (_settings.Theme == "system" && systemLight);
+        var palette = ThemePalettes.Resolve(_settings.Theme, systemLight);
+        foreach (var (name, hex) in palette.Brushes())
+            Resources[name] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex)!);
+        var notificationTop = (Color)ColorConverter.ConvertFromString(palette.NotificationTop)!;
+        var notificationBottom = (Color)ColorConverter.ConvertFromString(palette.NotificationBottom)!;
+        Resources["NotificationBackgroundBrush"] = notificationTop == notificationBottom
+            ? new SolidColorBrush(notificationTop)
+            : new LinearGradientBrush(notificationTop, notificationBottom, 90);
         foreach (Window window in Windows)
             ApplyWindowTheme(window);
     }

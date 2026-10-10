@@ -29,7 +29,7 @@ internal static class SettingsStore
                 return new AppSettings();
             var settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath)) ?? new AppSettings();
             settings.Language = Loc.IsSupported(settings.Language) ? settings.Language : "system";
-            settings.Theme = settings.Theme is "dark" or "light" ? settings.Theme : "system";
+            settings.Theme = ThemePalettes.IsSupported(settings.Theme) ? settings.Theme : "system";
             settings.NotificationDelaySeconds = Math.Clamp(settings.NotificationDelaySeconds, 3, 60);
             return settings;
         }

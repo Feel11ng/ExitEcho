@@ -23,12 +23,13 @@ public partial class SettingsWindow : Window
         LanguageCombo.Items.Add(new ComboBoxItem { Tag = "system" });
         foreach (var (code, name) in Loc.Languages)
             LanguageCombo.Items.Add(new ComboBoxItem { Tag = code, Content = name });
-        ThemeCombo.Items.Add(new ComboBoxItem { Tag = "system" });
-        ThemeCombo.Items.Add(new ComboBoxItem { Tag = "dark" });
-        ThemeCombo.Items.Add(new ComboBoxItem { Tag = "light" });
+        foreach (var (id, _) in ThemePalettes.Options)
+            ThemeCombo.Items.Add(new ComboBoxItem { Tag = id });
         LanguageCombo.SelectedIndex = Math.Max(0, Loc.Languages.ToList().FindIndex(
             x => x.Code.Equals(app.Settings.Language, StringComparison.OrdinalIgnoreCase)) + 1);
-        ThemeCombo.SelectedIndex = app.Settings.Theme switch { "dark" => 1, "light" => 2, _ => 0 };
+        ThemeCombo.SelectedIndex = Array.FindIndex(ThemePalettes.Options,
+            option => option.Id == app.Settings.Theme);
+        if (ThemeCombo.SelectedIndex < 0) ThemeCombo.SelectedIndex = 0;
         StartupToggle.IsChecked = SettingsStore.IsStartupEnabled();
         NotificationsToggle.IsChecked = app.Settings.ShowNotifications;
         DelayBox.Text = app.Settings.NotificationDelaySeconds.ToString(CultureInfo.InvariantCulture);
@@ -41,9 +42,8 @@ public partial class SettingsWindow : Window
         VersionText.Text = Loc.Format("Version",
             Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "—");
         ((ComboBoxItem)LanguageCombo.Items[0]).Content = Loc.Get("SystemDefault");
-        ((ComboBoxItem)ThemeCombo.Items[0]).Content = Loc.Get("ThemeSystem");
-        ((ComboBoxItem)ThemeCombo.Items[1]).Content = Loc.Get("ThemeDark");
-        ((ComboBoxItem)ThemeCombo.Items[2]).Content = Loc.Get("ThemeLight");
+        for (var index = 0; index < ThemePalettes.Options.Length; index++)
+            ((ComboBoxItem)ThemeCombo.Items[index]).Content = Loc.Get(ThemePalettes.Options[index].LabelKey);
     }
 
     private void OnLanguageChanged(object sender, SelectionChangedEventArgs e)
