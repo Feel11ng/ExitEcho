@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.4.0 (unreleased)
+
+- Moved the app, Core, CLI, and test projects to .NET 10 and unified their version metadata.
+- Added OLED Black, Graphite, and Midnight alongside the existing system, light, and dark theme choices.
+- Smoothed interruptible Pause/Resume, status, notification, and section transitions, with Reduced Motion support.
+- Added a compact recent-activity card and truthful event status steps in History and Details.
+- Fixed MainWindow spacing and ignored-app expansion so content does not overlap the Pause control.
+- Strengthened CI with functional ignore/legacy JSON tests, portable publish, and version checks.
+
 ## v0.3.0
 
 - Deduplicated notifications for the same app and updated open notifications with fresh process data.

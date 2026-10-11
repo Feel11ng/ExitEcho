@@ -12,7 +12,7 @@ ExitEcho watches Windows apps with visible windows and reports related processes
 
 The DemoApp sequence is staged using real WPF screens. ExitEcho's termination of two local test processes was verified.
 
-**Windows 10/11 x64** · [Download v0.3.0](https://github.com/Feel11ng/ExitEcho/releases/tag/v0.3.0)
+**Windows 11 x64 tested.** Windows 10 x64 compatibility has not been verified. [Download the latest published release](https://github.com/Feel11ng/ExitEcho/releases/latest).
 
 ## Code signing policy
 
@@ -30,17 +30,15 @@ ExitEcho's SignPath Foundation application was not approved. The current EXE rem
 
 | Main window | Notification |
 | --- | --- |
-| ![ExitEcho main window in dark mode](assets/screenshots/main.png) | ![ExitEcho leftover notification in dark mode](assets/screenshots/notification.png) |
+| ![ExitEcho main window in OLED Black](assets/screenshots/main.png) | ![ExitEcho leftover notification in OLED Black](assets/screenshots/notification.png) |
 | Details | Settings |
-| ![ExitEcho process details in dark mode](assets/screenshots/details.png) | ![ExitEcho settings in dark mode](assets/screenshots/settings.png) |
-
-[![Watch the full ExitEcho demo](assets/demo-cover.png)](assets/demo.mp4)
+| ![ExitEcho process details in OLED Black](assets/screenshots/details.png) | ![ExitEcho settings in OLED Black](assets/screenshots/settings.png) |
 
 The demo uses real ExitEcho windows from the staged DemoApp test.
 
 ## Install and use
 
-Download [ExitEcho-v0.3.0-win-x64.zip](https://github.com/Feel11ng/ExitEcho/releases/download/v0.3.0/ExitEcho-v0.3.0-win-x64.zip), extract it, and run `ExitEcho.exe`. No installer or administrator rights are needed.
+Download the portable ZIP from [GitHub Releases](https://github.com/Feel11ng/ExitEcho/releases/latest), extract it, and run `ExitEcho.exe`. No installer or administrator rights are needed.
 
 ExitEcho starts in the tray and monitors in the background. Open it from the tray icon. A notification leads to **Details**, where you can inspect processes, ignore one process, or end the listed leftovers after confirmation. Use **Ignore** on the notification to ignore the whole app. Manage both kinds of rules under Ignored apps. You can pause monitoring from the tray or main window. The default notification delay is eight seconds; Settings allows 3–60 seconds.
 
@@ -61,7 +59,7 @@ exitecho watch
 exitecho run "<path-to-exe>" [args]
 ```
 
-Build on Windows 10/11 x64 with the .NET 10 SDK:
+Build on Windows 11 x64 with the .NET 10 SDK. Windows 10 runtime support depends on the edition and servicing channel; ExitEcho has not been tested there:
 
 ```powershell
 dotnet restore ExitEcho.sln

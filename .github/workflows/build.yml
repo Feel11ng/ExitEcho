@@ -64,7 +64,7 @@ jobs:
           foreach ($file in $files) {
             if (-not (Test-Path -LiteralPath $file)) { throw "Missing build output: $file" }
             $version = (Get-Item -LiteralPath $file).VersionInfo
-            if ($version.FileVersion -ne '0.3.0.0' -or $version.ProductVersion -ne '0.3.0') {
+            if ($version.FileVersion -ne '0.4.0.0' -or $version.ProductVersion -ne '0.4.0') {
               throw "Wrong version for $file`: file=$($version.FileVersion), product=$($version.ProductVersion)"
             }
           }
@@ -81,7 +81,7 @@ jobs:
             $files[2]
           )) {
             $assembly = [System.Reflection.AssemblyName]::GetAssemblyName((Resolve-Path -LiteralPath $assemblyFile))
-            if ($assembly.Version.ToString() -ne '0.3.0.0') {
+            if ($assembly.Version.ToString() -ne '0.4.0.0') {
               throw "Wrong assembly version for $assemblyFile`: $($assembly.Version)"
             }
           }

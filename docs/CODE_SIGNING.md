@@ -2,9 +2,9 @@
 
 ## Current status
 
-ExitEcho is preparing an application to SignPath Foundation. Approval has not been granted, and **all current releases are unsigned**. This policy describes a proposed process; it does not claim that ExitEcho has received a certificate or that any published binary has a SignPath signature.
+ExitEcho applied to SignPath Foundation, but the application was not approved. **All current releases are unsigned.** The project has no SignPath certificate or signing access. The process below is a future proposal, not an active signing workflow.
 
-If the project is approved, the planned attribution is:
+If a future application is approved and signing is actually enabled, the planned attribution is:
 
 > Free code signing provided by SignPath.io, certificate by SignPath Foundation
 
