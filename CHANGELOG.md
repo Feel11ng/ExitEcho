@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.4.0 (unreleased)
+## v0.4.0
 
 - Moved the app, Core, CLI, and test projects to .NET 10 and unified their version metadata.
 - Added OLED Black, Graphite, and Midnight alongside the existing system, light, and dark theme choices.

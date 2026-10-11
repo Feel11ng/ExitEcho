@@ -15,7 +15,7 @@ ExitEcho v0.4.0 updates the Windows utility without changing how leftover proces
 
 The portable x64 archive is `ExitEcho-v0.4.0-win-x64.zip`. Extract it and run `ExitEcho.exe`; no installer is required.
 
-SHA-256: `FB021AE9EEF71A1EBD43B7D079957B94723947272A5D109B997D31E803B1150D`
+SHA-256: `97B830323DA72CB406F4FC97251A8AF9AAA01FB7B3E4807B4B36EB8103F0B254`
 
 The EXE is **unsigned**. The SignPath Foundation application was not approved. This build was tested on Windows 11 x64; ExitEcho has **not** been tested on Windows 10. Microsoft's .NET 10 support for Windows 10 is limited to supported LTSC/Enterprise editions and does not by itself verify ExitEcho compatibility.
 
