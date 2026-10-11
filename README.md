@@ -8,11 +8,15 @@ ExitEcho watches Windows apps with visible windows and reports related processes
 
 ![ExitEcho demonstration: a demo app closes and ExitEcho detects remaining processes](assets/demo.gif)
 
+[Watch the full 32-second demo](assets/demo.mp4)
+
+The DemoApp sequence is staged using real WPF screens. ExitEcho's termination of two local test processes was verified.
+
 **Windows 10/11 x64** · [Download v0.3.0](https://github.com/Feel11ng/ExitEcho/releases/tag/v0.3.0)
 
 ## Code signing policy
 
-ExitEcho is preparing an application to SignPath Foundation. Current releases are **not signed**. See the [code signing policy](docs/CODE_SIGNING.md) for the proposed signing process, project roles, privacy policy, and release approval requirements.
+ExitEcho's SignPath Foundation application was not approved. The current EXE remains **unsigned**. See the [code signing policy](docs/CODE_SIGNING.md) for the proposed signing process and privacy details.
 
 ## What it does
 
@@ -20,7 +24,7 @@ ExitEcho is preparing an application to SignPath Foundation. Current releases ar
 - Shows each remaining process's name, PID, and RAM. **End leftovers** is manual and requires confirmation.
 - Keeps a local exit history. **Ignore app** suppresses alerts for an entire app; **Ignore process** excludes one process for that app while leaving other processes visible.
 - Runs in the tray with pause and resume controls and a single GUI instance.
-- Supports light and dark themes and 27 UI languages. Settings cover theme, language (or the Windows default), optional startup, notifications, and detection delay.
+- Supports six theme choices (System default, Light, Dark, OLED Black, Graphite, and Midnight) and 27 UI languages. Settings cover theme, language (or the Windows default), optional startup, notifications, and detection delay.
 
 ## Screenshots
 
@@ -32,7 +36,7 @@ ExitEcho is preparing an application to SignPath Foundation. Current releases ar
 
 [![Watch the full ExitEcho demo](assets/demo-cover.png)](assets/demo.mp4)
 
-The demo shows real ExitEcho windows with illustrative process data.
+The demo uses real ExitEcho windows from the staged DemoApp test.
 
 ## Install and use
 
