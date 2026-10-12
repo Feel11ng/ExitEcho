@@ -12,7 +12,7 @@ ExitEcho watches Windows apps with visible windows and reports related processes
 
 The DemoApp sequence is staged using real WPF screens. ExitEcho's termination of two local test processes was verified.
 
-**Windows 11 x64 tested.** Windows 10 x64 compatibility has not been verified. [Download the latest published release](https://github.com/Feel11ng/ExitEcho/releases/latest).
+**Windows 11 x64 tested.** Windows 10 x64 compatibility has not been verified. [Download the latest published release](https://github.com/Feel11ng/ExitEcho/releases/latest) · [AlternativeTo](https://alternativeto.net/software/exitecho/about/).
 
 ## Code signing policy
 
